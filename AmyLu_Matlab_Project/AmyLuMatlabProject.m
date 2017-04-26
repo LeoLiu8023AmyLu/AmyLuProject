@@ -34,8 +34,18 @@ for n=1:length(Video_Name_C)    % 设置循环
     if(PTB_Flag==1)
        [ssss] = Screen('OpenMovie', win,filename);
        Screen('PlayMovie',ssss, 1);
+       while (1) % 逐帧播放视频
+        tex = Screen('GetMovieImage', win, ssss); % 获得一帧视频图像
+        if tex<=0 %判断视频是否已经读取完
+          break
+        end
+        %更新画面
+        Screen('DrawTexture', win, tex);% 绘制图像
+        Screen('Flip', win);% 更新显示
+        Screen('Close', tex);% 释放视频资源
+      end
     end
-    %选择答案
+    %选择答案   【生成选择】->【显示选择】->【获取键盘按钮】->【判断对错】
     Temp_Anwser=unidrnd(2)-1;    % 目前先用随机数生成 答案对错
     %记录函数
     OutPut_Cell(n,1)=num2cell(n);   %记录序号
