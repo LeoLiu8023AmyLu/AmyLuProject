@@ -5,8 +5,8 @@ sca
 %%
 PTB_Flag=1; % 1 为打开 PTB 0 为 关闭 (调试用，在PTB不正常的情况下 调试其他功能)
 FolderPath='D:\workspace\AmyLuProject\AmyLu_Matlab_Project\';	% 变更文件地址
-Excel_Start='A2';
-Excel_End='C21';
+Excel_Start=2;
+Excel_End=21;
 VolunteerName='LeoLiu'; 
 AnswerNum=3;
 % 数据初始化
@@ -15,7 +15,7 @@ Excel_DATA_FileName = [FolderPath,'DATA.xls'];  % 得到Excel电子表格完整目录
 Excel_OUTPUT_FileName = [FolderPath,'OutPut.xls'];  % 得到Excel电子表格完整目录
 Picture_TargetArea=[FolderPath,'target_area.jpg'];
 Picture_Wait_5s=[FolderPath,'5swait.jpg'];
-[NUM,TXT,RAW]=xlsread(Excel_DATA_FileName ,1,[Excel_Start,':',Excel_End]);  % 获得表格中的数据
+[NUM,TXT,RAW]=xlsread(Excel_DATA_FileName ,1,['A',num2str(Excel_Start),':','C',num2str(Excel_End)]);  % 获得表格中的数据
 Video_Name_C=RAW; % 文件交换 Video_Name_C(行号,列号) 引索由1开始
 % Video_Name_C(N,1) 序号
 % Video_Name_C(N,2) 文件名
@@ -33,7 +33,6 @@ if(PTB_Flag==1)
     Color_black = BlackIndex(screenNumber); % 得到黑色屏幕的颜色数值
     Color_white = WhiteIndex(screenNumber);
     Color_grey = Color_white / 2;
-    %[window,rect] = Screen('OpenWindow', screenid,Color_black);  % PsychImaging
     [window,windowRect] = PsychImaging('OpenWindow', screenNumber,Color_black);
     [screenXpixels, screenYpixels] = Screen('WindowSize', window);
     [xCenter, yCenter] = RectCenter(windowRect);
@@ -43,7 +42,7 @@ if(PTB_Flag==1)
     PTB_IMG_Wait_5s=Screen('MakeTexture',window ,Picture_Read_Wait_5s);
     % Set the blend funciton for the screen
     Screen('BlendFunction', window, 'GL_SRC_ALPHA', 'GL_ONE_MINUS_SRC_ALPHA');
-    Screen('TextSize', window, 50);
+    Screen('TextSize', window, 80);
     Screen('TextFont', window, 'simhei'); 
 end
 %% 主循环函数
@@ -59,7 +58,9 @@ for Main_Index=1:length(Video_Name_C)    % 设置循环
         % 题目
         Screen('DrawTexture', window ,PTB_IMG_Wait_5s);
         Screen('Flip',window);
-        WaitSecs(4);
+        WaitSecs(1);
+        DrawFormattedText(window, double('请观察下列车牌号:'), 'center', screenYpixels * (2/7), Color_white); % window,文字,X坐标，Y坐标，颜色
+        DrawFormattedText(window, double(char(Temp_CarCode)), 'center', screenYpixels * (3/7), Color_white); % window,文字,X坐标，Y坐标，颜色
         Screen('DrawTexture', window ,PTB_IMG_TargetArea);
         Screen('Flip',window);
         WaitSecs(1);

@@ -6,7 +6,7 @@ sca
 PTB_Flag=1; % 1 为打开 PTB 0 为 关闭 (调试用，在PTB不正常的情况下 调试其他功能)
 FolderPath='D:\workspace\AmyLuProject\AmyLu_Matlab_Project\';	% 变更文件地址
 Excel_Start='A2';
-Excel_End='C21';
+Excel_Start='C21';
 VolunteerName='LeoLiu'; 
 AnswerNum=3;
 % 数据初始化
@@ -15,7 +15,7 @@ Excel_DATA_FileName = [FolderPath,'DATA.xls'];  % 得到Excel电子表格完整目录
 Excel_OUTPUT_FileName = [FolderPath,'OutPut.xls'];  % 得到Excel电子表格完整目录
 Picture_TargetArea=[FolderPath,'target_area.jpg'];
 Picture_Wait_5s=[FolderPath,'5swait.jpg'];
-[NUM,TXT,RAW]=xlsread(Excel_DATA_FileName ,1,[Excel_Start,':',Excel_End]);  % 获得表格中的数据
+[NUM,TXT,RAW]=xlsread(Excel_DATA_FileName ,1,['A2',':','C21']);  % 获得表格中的数据
 Video_Name_C=RAW; % 文件交换 Video_Name_C(行号,列号) 引索由1开始
 % Video_Name_C(N,1) 序号
 % Video_Name_C(N,2) 文件名
@@ -126,5 +126,5 @@ WaitSecs(5);
 sca % 关闭屏幕
 OutPut_Cell
 xlswrite(Excel_OUTPUT_FileName, {'序号','原始DATA序号','视频文件名','车牌号','回答正误(1为正确,0为错误)'}, VolunteerName, 'A1:E1')
-xlswrite(Excel_OUTPUT_FileName, OutPut_Cell, VolunteerName, ['A',num2str(Excel_Start),':','E',num2str(Excel_End)])
+xlswrite(Excel_OUTPUT_FileName, OutPut_Cell, VolunteerName, 'A2:E21')
 %xlswrite(Excel_OUTPUT_FileName, OutPut_Cell, VolunteerName)
