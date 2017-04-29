@@ -1,0 +1,2 @@
+addpath('E:\AmyLu_Matlab_Project')
+AmyLuMatlabProject
