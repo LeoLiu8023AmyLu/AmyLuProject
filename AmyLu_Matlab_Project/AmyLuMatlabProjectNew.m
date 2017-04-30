@@ -127,7 +127,7 @@ for Main_Index=1:length(Video_Name_C)    % 设置循环
     end
     %% 选择答案
     if(PTB_Flag==1)
-        DrawFormattedText(window, double('请使用键盘输入\nY (一样) / N (不一样)'), 'center', 'center', Color_white); % window,文字,X坐标，Y坐标，颜色
+        DrawFormattedText(window, double('请使用键盘输入\nY (一致) / N (不一致)'), 'center', 'center', Color_white); % window,文字,X坐标，Y坐标，颜色
         Screen('Flip', window);% 更新显示
     end
     %键盘输入
