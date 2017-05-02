@@ -6,6 +6,7 @@ clear all
 %以下为程序控制部分     你要设置的
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 PTB_Flag = 1; % 1 为打开 PTB 0 为 关闭 (调试用，在PTB不正常的情况下 调试其他功能)
+Log_Flag = 1; % 1 为打开 Log 0 为 关闭 (调试用，输出运行中的记录)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %以下为初始化设置部分   你要设置的 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -14,7 +15,17 @@ VolunteerName='LeoLiu';  % 测试者姓名
 Excel_Start=2;  % Excel 开始行数
 Excel_End=21;   % Excel 结束行数
 CarCode_Change_Num=3;   % 车牌发生变化的位数 最大是 5
-CarCode_Char_Offset=7;  % 最小值为 5 
+CarCode_Char_Offset=7;  % 最小值为 5  最大值可以无限大 (已经做了处理)
+%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 设置输出
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if(Log_Flag==1)
+    disp(['-->志愿者姓名： ',VolunteerName])
+    disp(['-->读取数据数量： ',num2str((Excel_End-Excel_Start+1))])
+    disp(['-->车牌变化位数： ',num2str(CarCode_Change_Num)])
+    disp(['-->字符偏移量：',num2str(CarCode_Char_Offset)])
+end
 %% 数据初始化
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 数据初始化
@@ -38,18 +49,18 @@ OutPut_Cell={}; % 输出的初始化
 %% PTB工具初始化
 if(PTB_Flag==1)
     PsychDefaultSetup(2);
-    Screen('Preference','TextEncodingLocale','UTF-8');  % 文本显示编码用 GBK
+    Screen('Preference','TextEncodingLocale','UTF-8');  % 文本显示编码用 UTF-8
     Screen('Preference', 'SkipSyncTests', 1)    % 跳过检查
     screenGrps=Screen('Screens');   % 初始化 屏幕
-    screenNumber=max(screenGrps);  % Select the external screen if it is present, else revert to the native
+    screenNumber=max(screenGrps);  % 选择次要 投放显示器
     Color_black = BlackIndex(screenNumber); % 得到黑色屏幕的颜色数值
-    Color_white = WhiteIndex(screenNumber);
-    Color_grey = Color_white / 2;
-    [window,windowRect] = PsychImaging('OpenWindow', screenNumber,Color_black);
-    [screenXpixels, screenYpixels] = Screen('WindowSize', window);
-    [xCenter, yCenter] = RectCenter(windowRect);
-    Picture_Read_TargetArea= imread(Picture_TargetArea);
-    Picture_Read_Wait_5s= imread(Picture_Wait_5s);
+    Color_white = WhiteIndex(screenNumber); % 得到白色屏幕的颜色数值
+    Color_grey = Color_white / 2; % 得到灰色屏幕的颜色数值
+    [window,windowRect] = PsychImaging('OpenWindow', screenNumber,Color_black); % 获得当前屏幕与屏幕的相关信息
+    [screenXpixels, screenYpixels] = Screen('WindowSize', window); % 获得屏幕尺寸
+    [xCenter, yCenter] = RectCenter(windowRect); % 获得中心坐标
+    Picture_Read_TargetArea= imread(Picture_TargetArea); % 读取 十字 的图片
+    Picture_Read_Wait_5s= imread(Picture_Wait_5s); % 读取等待5秒钟的图片
     PTB_IMG_TargetArea=Screen('MakeTexture',window ,Picture_Read_TargetArea);
     PTB_IMG_Wait_5s=Screen('MakeTexture',window ,Picture_Read_Wait_5s);
     % Set the blend funciton for the screen
@@ -68,23 +79,23 @@ for Main_Index=1:length(Video_Name_C)    % 设置循环
     Flag_Change_Random=unidrnd(2)-1; % 随机生成 0 或 1 
     %% 変更车牌信息 
     if (Flag_Change_Random==1) % 改变显示的车牌内容
-        CarCode_Mask_Middle=[ones(1,CarCode_Change_Num) zeros(1,(5-CarCode_Change_Num))];
-        CarCode_Mask_Middle_Size = length(CarCode_Mask_Middle);
-        CarCode_Mask_Middle(randperm(CarCode_Mask_Middle_Size)) = CarCode_Mask_Middle(1:1:CarCode_Mask_Middle_Size);
-        CarCode_Mask=[0 CarCode_Mask_Middle 0];
-        Text_Offset_Random=randperm(CarCode_Char_Offset);
-        CarCode_Text_Offset_SQ=[0 Text_Offset_Random(1:5) 0];
-        CarCode_Text_Offset=CarCode_Text_Offset_SQ.*CarCode_Mask;
-        Temp_CarCode_Char=char(Temp_CarCode);
-        for CarChange_Index=1:7
-            Temp_Text=[];
-            Temp_Text(1,1)=Temp_CarCode_Char(CarChange_Index)+CarCode_Text_Offset(CarChange_Index);
-            Temp_Text(1,2)=Temp_CarCode_Char(CarChange_Index)-CarCode_Text_Offset(CarChange_Index);
-            Temp_Text(1,3)=Temp_CarCode_Char(CarChange_Index)+floor(mod(CarCode_Text_Offset(CarChange_Index),5)+1);
-            Temp_Text(1,4)=Temp_CarCode_Char(CarChange_Index)-floor(mod(CarCode_Text_Offset(CarChange_Index),5)+1);
-            for i=1:length(Temp_Text)
+    CarCode_Mask_Middle=[ones(1,CarCode_Change_Num) zeros(1,(5-CarCode_Change_Num))]; % 制作5位的变化位遮罩数组 [ 1 1 1 0 0 ] 1 代表变化，0 不变化
+        CarCode_Mask_Middle_Size = length(CarCode_Mask_Middle); % 得到遮罩数组长度
+        CarCode_Mask_Middle(randperm(CarCode_Mask_Middle_Size)) = CarCode_Mask_Middle(1:1:CarCode_Mask_Middle_Size); % 遮罩数组随机排序
+        CarCode_Mask=[0 CarCode_Mask_Middle 0];  % 遮罩数组补全车牌的 7 位
+        Text_Offset_Random=randperm(CarCode_Char_Offset); % 生成5位的 各个字符偏移量 数组
+        CarCode_Text_Offset_SQ=[0 Text_Offset_Random(1:5) 0]; % 补全为7位
+        CarCode_Text_Offset=CarCode_Text_Offset_SQ.*CarCode_Mask; % 与遮罩数组相乘得到最后的随机字符偏移数组
+        Temp_CarCode_Char=char(Temp_CarCode); % 由 cell 格式 转变为 char 格式
+        for CarChange_Index=1:7 % 循环处理每一个字符        
+            Temp_Text=[]; % 初始化
+            Temp_Text(1,1)=Temp_CarCode_Char(CarChange_Index)+CarCode_Text_Offset(CarChange_Index); % + 字符偏移
+            Temp_Text(1,2)=Temp_CarCode_Char(CarChange_Index)-CarCode_Text_Offset(CarChange_Index); % - 字符偏移
+            Temp_Text(1,3)=Temp_CarCode_Char(CarChange_Index)+floor(mod(CarCode_Text_Offset(CarChange_Index),5)+1); % + 字符偏移 (1~5)
+            Temp_Text(1,4)=Temp_CarCode_Char(CarChange_Index)-floor(mod(CarCode_Text_Offset(CarChange_Index),5)+1); % - 字符偏移 (1~5)
+            for i=1:length(Temp_Text) %判断是否可以操作
                 if((Temp_Text(1,i)>=65 & Temp_Text(1,i)<=90)|(Temp_Text(1,i)>=97 & Temp_Text(1,i)<=122)|(Temp_Text(1,i)>=48 & Temp_Text(1,i)<=57))
-                    Temp_CarCode_Char(CarChange_Index)=Temp_Text(1,i);
+                    Temp_CarCode_Char(CarChange_Index)=Temp_Text(1,i); % 赋值到临时字符串
                     break % 打断循环 发现满足条件的情况 就跳出循环
                 end
             end
@@ -93,9 +104,11 @@ for Main_Index=1:length(Video_Name_C)    % 设置循环
     else % 不改变显示的车牌内容
         Display_CarCode=Temp_CarCode;
     end
-    % 显示 打印
-    disp(['-->原始车牌：',char(Temp_CarCode),'是否改变：',num2str(Flag_Change_Random),' ( 1 改变 0 不改变)'])
-    disp(['-->改变后车牌：',char(Display_CarCode)])
+    if(Log_Flag==1)
+        % 显示 打印
+        disp(['-->原始车牌：',char(Temp_CarCode),'是否改变：',num2str(Flag_Change_Random),' ( 1 改变 0 不改变)'])
+        disp(['-->改变后车牌：',char(Display_CarCode)])
+    end
     %% 显示文字 及 播放视频
     if(PTB_Flag==1)
         %% 显示文字
@@ -153,7 +166,9 @@ for Main_Index=1:length(Video_Name_C)    % 设置循环
     keyCode(1,78)=0;    % 清零
     keyCode(1,89)=0;    % 清零
     keyIsDown=0;        % 清零
-    disp(['-->第',num2str(Main_Index),'个选项用户回答正确与否: ',num2str(Temp_Anwser),'( 1 正确 0 错误)'])
+    if(Log_Flag==1)
+        disp(['-->第',num2str(Main_Index),'个选项用户回答正确与否: ',num2str(Temp_Anwser),'( 1 正确 0 错误)'])
+    end
     %% 记录函数
     OutPut_Cell(Main_Index,1)=num2cell(Main_Index);   %记录序号
     OutPut_Cell(Main_Index,2)=Temp_Number;   %记录原始序号
@@ -169,7 +184,8 @@ if(PTB_Flag==1)
     sca % 关闭屏幕
 end
 %% 记录到 Excel 文件
-OutPut_Cell
+if(Log_Flag==1)
+    OutPut_Cell
+end
 xlswrite(Excel_OUTPUT_FileName, {'序号','原始DATA序号','视频文件名','车牌号','回答正误(1为正确,0为错误)'}, VolunteerName, 'A1:E1')
 xlswrite(Excel_OUTPUT_FileName, OutPut_Cell, VolunteerName, ['A',num2str(Excel_Start),':','E',num2str(Excel_End)])
-%xlswrite(Excel_OUTPUT_FileName, OutPut_Cell, VolunteerName)
