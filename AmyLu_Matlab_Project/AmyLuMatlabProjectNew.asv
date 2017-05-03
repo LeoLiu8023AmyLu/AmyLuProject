@@ -16,7 +16,7 @@ Excel_Start=2;  % Excel 开始行数
 Excel_End=21;   % Excel 结束行数
 CarCode_Change_Num=3;   % 车牌发生变化的位数 最大是 5
 CarCode_Char_Offset=7;  % 最小值为 5  最大值可以无限大 (已经做了处理)
-Play_Rate=1; % 播放方式 0 不播放  1 正常速度播放 -1 正常速度倒放
+Play_Rate=1; % 播放方式 
 %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 设置输出
