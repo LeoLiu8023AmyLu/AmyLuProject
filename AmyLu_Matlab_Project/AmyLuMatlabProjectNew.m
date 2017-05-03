@@ -16,7 +16,7 @@ Excel_Start=2;  % Excel 开始行数
 Excel_End=21;   % Excel 结束行数
 CarCode_Change_Num=3;   % 车牌发生变化的位数 最大是 5
 CarCode_Char_Offset=7;  % 最小值为 5  最大值可以无限大 (已经做了处理)
-Play_Rate=1; % 播放方式 0 不播放  1 正常速度播放 -1 正常速度倒放
+Play_Rate = 1; % 播放方式 0 不播放  1 正常速度播放 -1 正常速度倒放【目前无法倒序播放】
 %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 设置输出
@@ -26,6 +26,11 @@ if(Log_Flag==1)
     disp(['-->读取数据数量： ',num2str((Excel_End-Excel_Start+1))])
     disp(['-->车牌变化位数： ',num2str(CarCode_Change_Num)])
     disp(['-->字符偏移量：',num2str(CarCode_Char_Offset)])
+    if(Play_Rate==1)
+        disp('-->正序播放')
+    elseif(Play_Rate==-1)
+        disp('-->倒序播放')
+    end
 end
 %% 数据初始化
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -33,6 +38,8 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if(PTB_Flag==1)
     sca
+    Key_y=KbName('y');
+    Key_n=KbName('n');
 end
 Data_Num=Excel_End-Excel_Start+1;
 Excel_DATA_FileName = [FolderPath,'DATA.xls'];  % 得到Excel电子表格完整目录
@@ -44,14 +51,14 @@ Video_Name_C=RAW; % 文件交换 Video_Name_C(行号,列号) 引索由1开始
 % Video_Name_C(N,1) 序号
 % Video_Name_C(N,2) 文件名
 % Video_Name_C(N,3) 车牌号
-CarCodeAll=unique(Video_Name_C(:,3))
+CarCodeAll=unique(Video_Name_C(:,3));
 Random_Series=randperm(length(Video_Name_C));   % 生成随机数列
 OutPut_Cell={}; % 输出的初始化
 %% PTB工具初始化
 if(PTB_Flag==1)
     PsychDefaultSetup(2);
     Screen('Preference','TextEncodingLocale','UTF-8');  % 文本显示编码用 UTF-8
-    Screen('Preference', 'SkipSyncTests', 1)    % 跳过检查
+    Screen('Preference', 'SkipSyncTests', 1);    % 跳过检查
     screenGrps=Screen('Screens');   % 初始化 屏幕
     screenNumber=max(screenGrps);  % 选择次要 投放显示器
     Color_black = BlackIndex(screenNumber); % 得到黑色屏幕的颜色数值
@@ -95,7 +102,7 @@ for Main_Index=1:length(Video_Name_C)    % 设置循环
             Temp_Text(1,3)=Temp_CarCode_Char(CarChange_Index)+floor(mod(CarCode_Text_Offset(CarChange_Index),5)+1); % + 字符偏移 (1~5)
             Temp_Text(1,4)=Temp_CarCode_Char(CarChange_Index)-floor(mod(CarCode_Text_Offset(CarChange_Index),5)+1); % - 字符偏移 (1~5)
             for i=1:length(Temp_Text) %判断是否可以操作
-                if((Temp_Text(1,i)>=65 & Temp_Text(1,i)<=90)|(Temp_Text(1,i)>=97 & Temp_Text(1,i)<=122)|(Temp_Text(1,i)>=48 & Temp_Text(1,i)<=57))
+                if((Temp_Text(1,i)>=65 && Temp_Text(1,i)<=90)||(Temp_Text(1,i)>=97 && Temp_Text(1,i)<=122)||(Temp_Text(1,i)>=48 && Temp_Text(1,i)<=57))
                     Temp_CarCode_Char(CarChange_Index)=Temp_Text(1,i); % 赋值到临时字符串
                     break % 打断循环 发现满足条件的情况 就跳出循环
                 end
@@ -126,18 +133,20 @@ for Main_Index=1:length(Video_Name_C)    % 设置循环
         Screen('Flip',window);
         WaitSecs(1);
         %% 视频播放
-        [ssss] = Screen('OpenMovie', window,VideoFileName);
-        Screen('PlayMovie',ssss, Play_Rate); % 控制影片播放的是第三个参数 0 不播放 1 正常速度播放 -1 正常速度倒放
+        [Car_MoviePtr] = Screen('OpenMovie', window,VideoFileName);
+        Screen('PlayMovie',Car_MoviePtr, Play_Rate); % 控制影片播放的是第三个参数 0 不播放 1 正常速度播放 -1 正常速度倒放
         while (1) % 逐帧播放视频
-            tex = Screen('GetMovieImage', window, ssss); % 获得一帧视频图像
-            if tex<=0 %判断视频是否已经读取完
+            Movie_IMG_Temp = Screen('GetMovieImage', window, Car_MoviePtr); % 获得一帧视频图像
+            Movie_IMG_Temp
+            if Movie_IMG_Temp<=0 %判断视频是否已经读取完
                 break
             end
             %更新画面
-            Screen('DrawTexture', window, tex);% 绘制图像
+            Screen('DrawTexture', window, Movie_IMG_Temp);% 绘制图像
             Screen('Flip', window);% 更新显示
-            Screen('Close', tex);% 释放视频资源
+            Screen('Close', Movie_IMG_Temp);% 释放视频资源
         end
+        Screen('CloseMovie', Car_MoviePtr);
     end
     %% 选择答案
     if(PTB_Flag==1)
@@ -145,10 +154,11 @@ for Main_Index=1:length(Video_Name_C)    % 设置循环
         Screen('Flip', window);% 更新显示
     end
     %键盘输入
-    keyIsDown=0;
-    [keyIsDown, ~, keyCode, ~]=KbCheck;
-    while(keyIsDown==0)
+    while(1)
         [keyIsDown, ~, keyCode, ~]=KbCheck;
+        if (keyIsDown==1 && (keyCode(Key_y)||keyCode(Key_n)))
+            break
+        end
     end
     % Y 89  N 78 判断选择是否正确
     if(Flag_Change_Random==1)
@@ -169,6 +179,7 @@ for Main_Index=1:length(Video_Name_C)    % 设置循环
     keyIsDown=0;        % 清零
     if(Log_Flag==1)
         disp(['-->第',num2str(Main_Index),'个选项用户回答正确与否: ',num2str(Temp_Anwser),'( 1 正确 0 错误)'])
+        disp(['  '])
     end
     %% 记录函数
     OutPut_Cell(Main_Index,1)=num2cell(Main_Index);   %记录序号
