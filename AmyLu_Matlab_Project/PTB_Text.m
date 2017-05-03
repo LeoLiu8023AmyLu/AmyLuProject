@@ -54,6 +54,9 @@ DrawFormattedText(window, double('你最懒了！！！'), 'center',...
 
 % Flip to the screen
 Screen('Flip', window);
+WaitSecs(2); % 屏幕等待时间
+
+Screen('Flip', window);
 
 % Now we have drawn to the screen we wait for a keyboard button press (any
 % key) to terminate the demo

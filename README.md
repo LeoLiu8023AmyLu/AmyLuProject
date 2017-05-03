@@ -37,11 +37,13 @@
 ## 流程</br>
 * Step 0 : 初始化数据</br>
 * Step 1 : 初始化PTB</br>
-* Step 2 : </br>
-* Step 3 : </br>
-* Step 4 : </br>
-* Step 5 : </br>
-* Step 6 : </br>
-* Step 7 : </br>
-* Step 0 : </br>
-* Step 0 : </br>
+* Step 2 : 显示实验说明</br>
+* Step 3 : 等待键盘任意键输入</br>
+* Step 4 : 主循环：读取视频信息</br>
+* Step 5 : 主循环：变化车牌</br>
+* Step 6 : 主循环：显示十字及车牌</br>
+* Step 7 : 主循环：播放视频</br>
+* Step 8 : 主循环：选择判断</br>
+* Step 9 : 主循环：黑屏1秒</br>
+* Step 10 : 主循环：记录信息</br>
+* Step 11 : 结束程序</br>

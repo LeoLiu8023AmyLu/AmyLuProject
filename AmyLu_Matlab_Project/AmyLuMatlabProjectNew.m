@@ -38,8 +38,10 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if(PTB_Flag==1)
     sca
-    Key_y=KbName('y');
+    Key_y=KbName('y'); % 键盘号码
     Key_n=KbName('n');
+    Key_right=KbName('RightArrow');
+    Key_left=KbName('LeftArrow');
 end
 Data_Num=Excel_End-Excel_Start+1;
 Excel_DATA_FileName = [FolderPath,'DATA.xls'];  % 得到Excel电子表格完整目录
@@ -68,14 +70,21 @@ if(PTB_Flag==1)
     [screenXpixels, screenYpixels] = Screen('WindowSize', window); % 获得屏幕尺寸
     [xCenter, yCenter] = RectCenter(windowRect); % 获得中心坐标
     Picture_Read_TargetArea= imread(Picture_TargetArea); % 读取 十字 的图片
-    Picture_Read_Wait_5s= imread(Picture_Wait_5s); % 读取等待5秒钟的图片
     PTB_IMG_TargetArea=Screen('MakeTexture',window ,Picture_Read_TargetArea);
-    PTB_IMG_Wait_5s=Screen('MakeTexture',window ,Picture_Read_Wait_5s);
     % Set the blend funciton for the screen
     Screen('BlendFunction', window, 'GL_SRC_ALPHA', 'GL_ONE_MINUS_SRC_ALPHA');
     Screen('TextSize', window, 100);
     Screen('TextFont', window, 'simhei'); 
-end
+    DrawFormattedText(window, double('实验说明'), 'center', 'center', Color_white); % 实验说明
+    Screen('Flip',window);
+    %键盘输入
+    keyIsDown=0;
+    while(1)
+        [keyIsDown, ~, keyCode, ~]=KbCheck;
+        if (keyIsDown==1)
+            break
+        end
+    end
 %% 主循环函数
 for Main_Index=1:length(Video_Name_C)    % 设置循环
     %% 获取视频信息
@@ -85,7 +94,7 @@ for Main_Index=1:length(Video_Name_C)    % 设置循环
     Temp_CarCode=Video_Name_C(Temp,3);      % 读取车牌号
     VideoFileName =[FolderPath,'video/',char(Temp_VideoName)];   % 得到完整的视频文件路径
     Flag_Change_Random=unidrnd(2)-1; % 随机生成 0 或 1 
-    %% 変更车牌信息 
+    %% 変更车牌信息
     if (Flag_Change_Random==1) % 改变显示的车牌内容
     CarCode_Mask_Middle=[ones(1,CarCode_Change_Num) zeros(1,(5-CarCode_Change_Num))]; % 制作5位的变化位遮罩数组 [ 1 1 1 0 0 ] 1 代表变化，0 不变化
         CarCode_Mask_Middle_Size = length(CarCode_Mask_Middle); % 得到遮罩数组长度
@@ -119,19 +128,14 @@ for Main_Index=1:length(Video_Name_C)    % 设置循环
     end
     %% 显示文字 及 播放视频
     if(PTB_Flag==1)
-        %% 显示文字
-        Screen('DrawTexture', window ,PTB_IMG_Wait_5s); % 等待5秒钟的图片
-        Screen('Flip',window);  % 更新显示
-        WaitSecs(1); % 屏幕等待时间
-        %% 显示车牌
-        DrawFormattedText(window, double('请观察下列车牌号:'), 'center', screenYpixels * (2/7), Color_white); % 显示文字
-        DrawFormattedText(window, double(char(Display_CarCode)), 'center', screenYpixels * (4/7), Color_white); % 显示车牌
-        Screen('Flip',window);
-        WaitSecs(3);
         %% 显示定位
         Screen('DrawTexture', window ,PTB_IMG_TargetArea);
         Screen('Flip',window);
         WaitSecs(1);
+        %% 显示车牌
+        DrawFormattedText(window, double(char(Display_CarCode)), 'center', 'center', Color_white); % 显示车牌
+        Screen('Flip',window);
+        WaitSecs(3);
         %% 视频播放
         [Car_MoviePtr] = Screen('OpenMovie', window,VideoFileName);
         Screen('PlayMovie',Car_MoviePtr, Play_Rate); % 控制影片播放的是第三个参数 0 不播放 1 正常速度播放 -1 正常速度倒放
@@ -150,37 +154,40 @@ for Main_Index=1:length(Video_Name_C)    % 设置循环
     end
     %% 选择答案
     if(PTB_Flag==1)
-        DrawFormattedText(window, double('请使用键盘输入\nY (一致) / N (不一致)'), 'center', 'center', Color_white); % window,文字,X坐标，Y坐标，颜色
+        DrawFormattedText(window, double('请使用键盘输入:\n<-- (一致)     /     --> (不一致)'), 'center', 'center', Color_white); % window,文字,X坐标，Y坐标，颜色
         Screen('Flip', window);% 更新显示
     end
     %键盘输入
     while(1)
         [keyIsDown, ~, keyCode, ~]=KbCheck;
-        if (keyIsDown==1 && (keyCode(Key_y)||keyCode(Key_n)))
+        if (keyIsDown==1 && (keyCode(Key_right)||keyCode(Key_n)))
             break
         end
     end
     % Y 89  N 78 判断选择是否正确
     if(Flag_Change_Random==1)
-        if (keyCode(1,78)==1)
+        if (keyCode(Key_right)==1)
             Temp_Anwser=1;
         else
             Temp_Anwser=0;
         end
     else
-        if (keyCode(1,89)==1)
+        if (keyCode(Key_left)==1)
             Temp_Anwser=1;
         else
             Temp_Anwser=0;
         end
     end
-    keyCode(1,78)=0;    % 清零
-    keyCode(1,89)=0;    % 清零
+    keyCode(Key_right)=0;    % 清零
+    keyCode(Key_left)=0;    % 清零
     keyIsDown=0;        % 清零
     if(Log_Flag==1)
         disp(['-->第',num2str(Main_Index),'个选项用户回答正确与否: ',num2str(Temp_Anwser),'( 1 正确 0 错误)'])
         disp(['  '])
     end
+    %% 黑屏显示
+        Screen('Flip',window);  % 更新显示
+        WaitSecs(1); % 屏幕等待时间
     %% 记录函数
     OutPut_Cell(Main_Index,1)=num2cell(Main_Index);   %记录序号
     OutPut_Cell(Main_Index,2)=Temp_Number;   %记录原始序号
