@@ -29,3 +29,19 @@
 [5. PTB 官网  http://psychtoolbox.org/](http://psychtoolbox.org/)</br>
 [6. PTB Demo例子 http://peterscarfe.com/ptbtutorials.html](http://peterscarfe.com/ptbtutorials.html)</br>
 [7. PTB Text 例子程序 http://peterscarfe.com/textdemo.html](http://peterscarfe.com/textdemo.html)</br>
+
+##　目前问题及任务</br>
+* 2017.05.03 A.相关说明在视频播放前统一说明 	B.十字的出现时间随机	 C.键盘判断使用箭头 	D.每个车牌展示停顿，任意键继续
+
+
+## 流程</br>
+* Step 0 : 初始化数据</br>
+* Step 1 : 初始化PTB</br>
+* Step 2 : </br>
+* Step 3 : </br>
+* Step 4 : </br>
+* Step 5 : </br>
+* Step 6 : </br>
+* Step 7 : </br>
+* Step 0 : </br>
+* Step 0 : </br>

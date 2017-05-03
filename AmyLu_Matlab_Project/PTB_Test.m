@@ -21,7 +21,7 @@ Color_black = BlackIndex(screenNumber); % 得到黑色屏幕的颜色数值
     %% 视频播放
     VideoFileName='D:\workspace\AmyLuProject\AmyLu_Matlab_Project\MovieDemos\DualDiscs.mov'
         [Car_MoviePtr] = Screen('OpenMovie', window,VideoFileName);
-        Screen('PlayMovie',Car_MoviePtr, -1); % 控制影片播放的是第三个参数 0 不播放 1 正常速度播放 -1 正常速度倒放
+        Screen('PlayMovie',Car_MoviePtr, 5); % 控制影片播放的是第三个参数 0 不播放 1 正常速度播放 -1 正常速度倒放
         while (1) % 逐帧播放视频
             Movie_IMG_Temp = Screen('GetMovieImage', window, Car_MoviePtr); % 获得一帧视频图像
             Movie_IMG_Temp
