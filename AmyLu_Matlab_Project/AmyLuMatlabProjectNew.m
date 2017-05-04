@@ -10,7 +10,7 @@ Log_Flag = 1; % 1 为打开 Log 0 为 关闭 (调试用，输出运行中的记录)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %以下为初始化设置部分   你要设置的 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-FolderPath='D:\workspace\AmyLuProject\AmyLu_Matlab_Project\';	% 变更文件地址
+FolderPath='D:\workspace\AmyLuProject\AmyLu_Matlab_Project\';	% 变更文件地址 注意 '\'斜线
 VolunteerName='LeoLiu';  % 测试者姓名
 Excel_Start=2;  % Excel 开始行数
 Excel_End=21;   % Excel 结束行数
@@ -18,7 +18,7 @@ CarCode_Change_Num=3;   % 车牌发生变化的位数 最大是 5
 CarCode_Char_Offset=7;  % 最小值为 5  最大值可以无限大 (已经做了处理)
 Play_Rate = 1; % 播放方式 0 不播放  1 正常速度播放 -1 正常速度倒放【目前无法倒序播放】
 PTB_Text_Size=100;%调节字体大小
-%% 设置输出
+%% 打印设置
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 设置输出
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -35,8 +35,8 @@ end
 if(PTB_Flag==1)
     sca % 关闭 PTB 创建的窗口
 end
-Cross_Wait_Time=[0.22 0.24 0.26 0.28 0.3];
-Data_Num=Excel_End-Excel_Start+1;
+Cross_Wait_Time=[0.22 0.24 0.26 0.28 0.3]; % 设置等待时间
+Data_Num=Excel_End-Excel_Start+1; % 获取数据读取数量
 Excel_DATA_FileName = [FolderPath,'DATA.xls'];  % 得到Excel电子表格完整目录
 Excel_OUTPUT_FileName = [FolderPath,'OutPut.xls'];  % 得到Excel电子表格完整目录
 Picture_TargetArea=[FolderPath,'target_area.jpg'];  % 得到 十字 的图片完整路径地址
@@ -161,13 +161,13 @@ for Main_Index=1:length(Video_Name_C)    % 设置循环
             end
         end
         %% 判断选择是否正确，用左右箭头表示
-        if(Flag_Change_Random==1)%表示不一致
+        if(Flag_Change_Random==1)% 表示不一致
             if (keyCode(Key_right)==1)
                 Temp_Anwser=1;
             else
                 Temp_Anwser=0;
             end
-        else
+        else % 一致的情况
             if (keyCode(Key_left)==1)
                 Temp_Anwser=1;
             else
@@ -204,7 +204,11 @@ if(PTB_Flag==1)
 end
 %% 记录到 Excel 文件
 if(Log_Flag==1)
+    Temp={'序号','原始DATA序号','视频文件名','车牌号','速度(m/s)','回答正误(1为正确,0为错误)'}
     OutPut_Cell
 end
 xlswrite(Excel_OUTPUT_FileName, {'序号','原始DATA序号','视频文件名','车牌号','速度(m/s)','回答正误(1为正确,0为错误)'}, VolunteerName, 'A1:F1')
 xlswrite(Excel_OUTPUT_FileName, OutPut_Cell, VolunteerName, ['A',num2str(Excel_Start),':','F',num2str(Excel_End)])
+if(Log_Flag==1)
+    disp(['-->实验数据保存成功 ！'])
+end
