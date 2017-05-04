@@ -74,7 +74,7 @@ if(PTB_Flag==1)
     %按下任意键开始
     keyIsDown=0;
     while(1)
-        [keyIsDown, ~, keyCode, ~]=KbCheck;
+        [keyIsDown, ~, keyCode, ~]=KbCheck; % 获取键盘按键
         if (keyIsDown==1) % 按键后退出循环
             break
         end
@@ -156,7 +156,7 @@ for Main_Index=1:length(Video_Name_C)    % 设置循环
         %% 键盘输入
         while(1)
             [keyIsDown, ~, keyCode, ~]=KbCheck;
-            if (keyIsDown==1 && (keyCode(Key_right)||keyCode(Key_left)))
+            if (keyIsDown==1 && (keyCode(Key_right)||keyCode(Key_left))) % 判断是否是按键 并且是否是左右箭头键
                 break
             end
         end
