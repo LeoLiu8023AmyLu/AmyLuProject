@@ -18,7 +18,7 @@ CarCode_Change_Num=3;   % 车牌发生变化的位数 最大是 5
 CarCode_Char_Offset=7;  % 最小值为 5  最大值可以无限大 (已经做了处理)
 Play_Rate = 1; % 播放方式 0 不播放  1 正常速度播放 -1 正常速度倒放【目前无法倒序播放】
 PTB_Text_Size=100;%调节字体大小
-%%
+%% 设置输出
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 设置输出
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -74,7 +74,7 @@ if(PTB_Flag==1)
     %按下任意键开始
     keyIsDown=0;
     while(1)
-        [keyIsDown, ~, keyCode, ~]=KbCheck;
+        [keyIsDown, ~, keyCode, ~]=KbCheck; % 获取键盘按键
         if (keyIsDown==1) % 按键后退出循环
             break
         end
@@ -156,7 +156,7 @@ for Main_Index=1:length(Video_Name_C)    % 设置循环
         %% 键盘输入
         while(1)
             [keyIsDown, ~, keyCode, ~]=KbCheck;
-            if (keyIsDown==1 && (keyCode(Key_right)||keyCode(Key_left)))
+            if (keyIsDown==1 && (keyCode(Key_right)||keyCode(Key_left))) % 判断是否是按键 并且是否是左右箭头键
                 break
             end
         end
