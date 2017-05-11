@@ -12,15 +12,13 @@ Log_Flag = 1; % 1 为打开 Log 0 为 关闭 (调试用，输出运行中的记录)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 FolderPath='D:\workspace\AmyLuProject\AmyLu_Matlab_Project\';	% 变更文件地址 注意 '\'斜线
 VolunteerName='LeoLiu';  % 测试者姓名
-Excel_Start=2;          % Excel 开始行数
-Speed_Num=6;            % 速度的类别数
-CarCode_Class_Num=40;   % 车牌类别数
-Excel_End=Excel_Start+CarCode_Class_Num*Speed_Num-1; % 计算 Excel 结束行数
+Excel_Start=2;  % Excel 开始行数
+Excel_End=25;   % Excel 结束行数
 CarCode_Change_Num=3;   % 车牌发生变化的位数 最大是 4
 CarCode_Char_Offset=7;  % 最小值为 5  最大值可以无限大 (已经做了处理)
-Play_Rate = 1;          % 播放方式 0 不播放  1 正常速度播放 -1 正常速度倒放【目前无法倒序播放】
-PTB_Text_Size=75;       % 调节字体大小
-Rest_Num=50;            % 50次后休息一下
+Play_Rate = 1; % 播放方式 0 不播放  1 正常速度播放 -1 正常速度倒放【目前无法倒序播放】
+PTB_Text_Size=75;%调节字体大小
+Rest_Num=50;%50次后休息一下
 %% 打印设置
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 设置输出
@@ -85,7 +83,6 @@ if(PTB_Flag==1)
             break
         end
     end
-    keyIsDown=0; % 按键Flag初始化
 end
 %% 主循环函数
 for Main_Index=1:length(Video_Name_C)    % 设置循环
@@ -97,21 +94,17 @@ for Main_Index=1:length(Video_Name_C)    % 设置循环
     Temp_Video_Form=Video_Name_C(Temp,4);    % 读取文件类型
     Temp_CarCode=Video_Name_C(Temp,5);      % 读取车牌号
     Temp_Speed=Temp_Video_Speed/10.0;%计算速度
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % 转化格式 (由于Excel 存入的类型是数字，所以在此转化为字符)
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    if (Temp_Video_Class<10) % 视频类别转化为字符
+    if (Temp_Video_Class<10) % 添加0
         Temp_Category_Char=[int2str(0),int2str(Temp_Video_Class)];% 添加零
     else
         Temp_Category_Char=num2str(Temp_Video_Class);              % 转化为字符串
     end
-    if (Temp_Video_Speed<10) % 视频速度转化为字符
+    if (Temp_Video_Speed<10) % 添加0
         Temp_Speed_Char=[int2str(0),int2str(Temp_Video_Speed)];   % 添加零
     else
         Temp_Speed_Char=num2str(Temp_Video_Speed);                % 转化为字符串
     end
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    Temp_VideoName=[char(Temp_Category_Char),'-',char(Temp_Speed_Char),char(Temp_Video_Form)] % 组成视频文件名
+    Temp_VideoName=[char(Temp_Category_Char),'-',char(Temp_Speed_Char),char(Temp_Video_Form)] %组成视频文件名
     VideoFileName =[FolderPath,'video/',char(Temp_VideoName)];   % 得到完整的视频文件路径
     Flag_Change_Random=unidrnd(2)-1; % 随机生成 0 或 1 
     %% 変更车牌信息 
@@ -165,30 +158,22 @@ for Main_Index=1:length(Video_Name_C)    % 设置循环
             if Movie_IMG_Temp<=0 %判断视频是否已经读取完
                 break
             end
-            % 接收键盘按键
-            [keyIsDown, ~, keyCode, ~]=KbCheck;
-            if (keyIsDown==1 && (keyCode(Key_right)||keyCode(Key_left))) % 判断是否是按键 并且是否是左右箭头键
-                break
-            end
-            % 更新画面
+            %更新画面
             Screen('DrawTexture', window, Movie_IMG_Temp);% 绘制图像
             Screen('Flip', window);% 更新显示
             Screen('Close', Movie_IMG_Temp);% 释放视频资源
         end
         Screen('CloseMovie', Car_MoviePtr);
-        Screen('Flip', window);% 更新显示 (去除一些视频残留)
     end
     %% 选择答案
     if(PTB_Flag==1)
-        if(keyIsDown~=1)
-            DrawFormattedText(window, double('一致    不一致 \n\n<--    -->'), 'center', 'center', Color_white); % window,文字,X坐标，Y坐标，颜色
-            Screen('Flip', window);% 更新显示
-            %% 键盘输入
-            while(1)  
-                [keyIsDown, ~, keyCode, ~]=KbCheck;
-                if (keyIsDown==1 && (keyCode(Key_right)||keyCode(Key_left))) % 判断是否是按键 并且是否是左右箭头键
-                    break
-                end
+        DrawFormattedText(window, double('一致    不一致 \n\n<--    -->'), 'center', 'center', Color_white); % window,文字,X坐标，Y坐标，颜色
+        Screen('Flip', window);% 更新显示
+        %% 键盘输入
+        while(1)  
+            [keyIsDown, ~, keyCode, ~]=KbCheck;
+            if (keyIsDown==1 && (keyCode(Key_right)||keyCode(Key_left))) % 判断是否是按键 并且是否是左右箭头键
+                break
             end
         end
         %% 判断选择是否正确，用左右箭头表示
@@ -226,16 +211,10 @@ for Main_Index=1:length(Video_Name_C)    % 设置循环
     OutPut_Cell(Main_Index,5)=num2cell(Temp_Speed);  % 记录速度
     OutPut_Cell(Main_Index,6)=num2cell(Temp_Anwser); %记录回答正误
     %% 试次间暂停休息
-    if(PTB_Flag==1)
-        if(mod(Main_Index,Rest_Num)==0)
-            DrawFormattedText(window, double('休息10秒'), 'center', 'center', Color_white);
-            Screen('Flip', window);% 更新显示
-            WaitSecs(10);
-        end
-    else    % 测试休息功能
-        if(mod(Main_Index,Rest_Num)==0)
-            disp(['主循环引索: ',num2str(Main_Index),' -->休息10秒<--'])
-        end
+    if(mod(Main_Index,Rest_Num)==0)
+        DrawFormattedText(window, double('休息10秒'), 'center', 'center', Color_white);
+        Screen('Flip', window);% 更新显示
+        WaitSecs(10);    
     end     
 end
 %% 结束问候

@@ -85,7 +85,6 @@ if(PTB_Flag==1)
             break
         end
     end
-    keyIsDown=0; % 按键Flag初始化
 end
 %% 主循环函数
 for Main_Index=1:length(Video_Name_C)    % 设置循环
@@ -165,11 +164,7 @@ for Main_Index=1:length(Video_Name_C)    % 设置循环
             if Movie_IMG_Temp<=0 %判断视频是否已经读取完
                 break
             end
-            % 接收键盘按键
-            [keyIsDown, ~, keyCode, ~]=KbCheck;
-            if (keyIsDown==1 && (keyCode(Key_right)||keyCode(Key_left))) % 判断是否是按键 并且是否是左右箭头键
-                break
-            end
+            %  
             % 更新画面
             Screen('DrawTexture', window, Movie_IMG_Temp);% 绘制图像
             Screen('Flip', window);% 更新显示
@@ -180,15 +175,13 @@ for Main_Index=1:length(Video_Name_C)    % 设置循环
     end
     %% 选择答案
     if(PTB_Flag==1)
-        if(keyIsDown~=1)
-            DrawFormattedText(window, double('一致    不一致 \n\n<--    -->'), 'center', 'center', Color_white); % window,文字,X坐标，Y坐标，颜色
-            Screen('Flip', window);% 更新显示
-            %% 键盘输入
-            while(1)  
-                [keyIsDown, ~, keyCode, ~]=KbCheck;
-                if (keyIsDown==1 && (keyCode(Key_right)||keyCode(Key_left))) % 判断是否是按键 并且是否是左右箭头键
-                    break
-                end
+        DrawFormattedText(window, double('一致    不一致 \n\n<--    -->'), 'center', 'center', Color_white); % window,文字,X坐标，Y坐标，颜色
+        Screen('Flip', window);% 更新显示
+        %% 键盘输入
+        while(1)  
+            [keyIsDown, ~, keyCode, ~]=KbCheck;
+            if (keyIsDown==1 && (keyCode(Key_right)||keyCode(Key_left))) % 判断是否是按键 并且是否是左右箭头键
+                break
             end
         end
         %% 判断选择是否正确，用左右箭头表示
