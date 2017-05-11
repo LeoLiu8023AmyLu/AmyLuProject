@@ -5,7 +5,7 @@ clear all
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %以下为程序控制部分     你要设置的
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-CarCode_Mode=1;     % 1 使用外部txt 文件 0 使用本程序生成的随机车牌
+CarCode_Mode=0;     % 1 使用外部txt 文件 0 使用本程序生成的随机车牌
 Char_Flag = 1;      % 1 为打开  0 为关闭 车牌后5位随机更换为字母
 Log_Flag = 1;       % 1 为打开 Log 0 为 关闭 (调试用，输出运行中的记录)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -76,13 +76,14 @@ if(CarCode_Mode==0)
         Temp_Char_Change_Index=unidrnd(3)+2;
         Temp_CarCode(Temp_Char_Change_Index)=char(Car_Char(unidrnd(length(Car_Char))));
     end
-    %% 记录函数
+    % 记录函数
     CarCode_Cell(Main_Index)={Temp_CarCode};
     end
     % 打印提示
     if(Log_Flag==1)
         disp('-->随机车牌生成完成')
     end
+    %% 保存车牌
     CarCode_Txt_OutPut=fopen('CarCode.txt','w','n','UTF-8');
     fprintf(CarCode_Txt_OutPut,[Title_Name,'\r\n']);
     for index=1:length(CarCode_Cell)
@@ -96,7 +97,6 @@ if(CarCode_Mode==0)
     end
 end
 %% 循环 生成Excel表格内容
-
 for Excel_Index=1:Excel_All
     %% 计算类别
     Temp_Category=ceil(Excel_Index/6);

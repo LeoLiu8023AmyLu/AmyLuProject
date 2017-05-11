@@ -5,18 +5,19 @@ clear all
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %以下为程序控制部分     你要设置的
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-CarCode_Mode=1;     % 1 使用外部txt 文件 0 使用本程序生成的随机车牌
-Char_Flag = 0;      % 1 为打开  0 为关闭 车牌后5位随机更换为字母
+CarCode_Mode=0;     % 1 使用外部txt 文件 0 使用本程序生成的随机车牌
+Char_Flag = 1;      % 1 为打开  0 为关闭 车牌后5位随机更换为字母
 Log_Flag = 1;       % 1 为打开 Log 0 为 关闭 (调试用，输出运行中的记录)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %以下为初始化设置部分   你要设置的 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Title_Name='CarCode';   % Txt 文件的数据组名称
+Txt_File_Name='CarCode_40 20170509.txt';    % 要读取的 Python 生成的Txt文件名
 Video_Form='.mp4';
 FolderPath='D:\workspace\AmyLuProject\AmyLu_Matlab_Project\';	% 变更文件地址 注意 '\'斜线
 Start_Speed=0.1;    % 起始速度
 Speed_Step=0.1;     % 速度变化步进
-Speed_Num=6;
+Speed_Num=6;        % 速度类别数
 End_Speed=Start_Speed+(Speed_Num-1)*Speed_Step;      % 终止速度
 Excel_Start=2;      % Excel 开始行数
 Car_Code_Num=40;    % 自定义车牌的总数量
@@ -33,7 +34,7 @@ OutPut_Cell={};     % 初始化输出项
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if(CarCode_Mode==1)
     %% 读取 TXT 文件
-    TXT_CarCode_FileName = [FolderPath,'CarCode_40 20170509.txt'];  % TXT 文件名
+    TXT_CarCode_FileName = [FolderPath,Txt_File_Name];  % TXT 文件名
     TXT_CarCode = fopen(TXT_CarCode_FileName,'r','n','UTF-8');      % 设置UTF-8码才能转换
     TXT_CarCode_Tline = fgetl(TXT_CarCode);                         % 读取第一行
     Temp_Index=1;                                                   % 设置临时引索
@@ -69,8 +70,12 @@ if(CarCode_Mode==0)
     for Main_Index=1:Car_Code_Num    % 设置循环
     %% 生成车牌
     Temp_CarCode_Num=randperm(9);
-    Temp_CarCode=[char(Car_City(unidrnd(length(Car_City)))),char(Car_Char(length(Car_Char))),num2str(Temp_CarCode_Num(1:5))];
+    Temp_CarCode=[char(Car_City(unidrnd(length(Car_City)))),char(Car_Char(unidrnd(length(Car_Char)))),num2str(Temp_CarCode_Num(1:5))];
     Temp_CarCode=strrep(Temp_CarCode,' ','');
+    if(Char_Flag==1)
+        Temp_Char_Change_Index=unidrnd(3)+2;
+        Temp_CarCode(Temp_Char_Change_Index)=char(Car_Char(unidrnd(length(Car_Char))));
+    end
     %% 记录函数
     CarCode_Cell(Main_Index)={Temp_CarCode};
     end
@@ -78,15 +83,19 @@ if(CarCode_Mode==0)
     if(Log_Flag==1)
         disp('-->随机车牌生成完成')
     end
-    CarCode_Txt_OutPut=fopen('CarCode.txt','r','n','UTF-8');
+    CarCode_Txt_OutPut=fopen('CarCode.txt','w','n','UTF-8');
     fprintf(CarCode_Txt_OutPut,[Title_Name,'\r\n']);
     for index=1:length(CarCode_Cell)
-    
+        fprintf(CarCode_Txt_OutPut,[char(CarCode_Cell(index)),'\r\n']);  % \r\n Windows版本换行符
     end
     fclose(CarCode_Txt_OutPut);
+    % 打印提示
+    if(Log_Flag==1)
+        CarCode_Cell
+        disp('-->文本保存完成')
+    end
 end
 %% 循环 生成Excel表格内容
-
 for Excel_Index=1:Excel_All
     %% 计算类别
     Temp_Category=ceil(Excel_Index/6);
