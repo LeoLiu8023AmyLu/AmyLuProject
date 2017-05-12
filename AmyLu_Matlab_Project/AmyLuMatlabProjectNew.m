@@ -5,7 +5,7 @@ clear all
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %以下为程序控制部分     你要设置的
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-PTB_Flag = 0; % 1 为打开 PTB 0 为 关闭 (调试用，在PTB不正常的情况下 调试其他功能)
+PTB_Flag = 1; % 1 为打开 PTB 0 为 关闭 (调试用，在PTB不正常的情况下 调试其他功能)
 Log_Flag = 1; % 1 为打开 Log 0 为 关闭 (调试用，输出运行中的记录)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %以下为初始化设置部分   你要设置的 
@@ -36,7 +36,7 @@ end
 % 数据初始化
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if(PTB_Flag==1)
-    sca % 关闭 PTB 创建的窗口
+    %sca % 关闭 PTB 创建的窗口
 end
 Cross_Wait_Time=[0.22 0.24 0.26 0.28 0.3]; % 设置等待时间
 Data_Num=Excel_End-Excel_Start+1; % 获取数据读取数量
@@ -161,13 +161,14 @@ for Main_Index=1:length(Video_Name_C)    % 设置循环
         [Car_MoviePtr] = Screen('OpenMovie', window,VideoFileName);
         Screen('PlayMovie',Car_MoviePtr, Play_Rate); % 控制影片播放的是第三个参数 0 不播放 1 正常速度播放 -1 正常速度倒放
         while (1) % 逐帧播放视频
-            Movie_IMG_Temp = Screen('GetMovieImage', window, Car_MoviePtr); % 获得一帧视频图像
-            if Movie_IMG_Temp<=0 %判断视频是否已经读取完
+            % 接收键盘按键
+            [keyIsDown,secs,keyCode]=KbCheck;
+            if (keyIsDown==1 && (keyCode(Key_right)||keyCode(Key_left))) % 判断是否是按键 并且是否是左右箭头键
                 break
             end
-            % 接收键盘按键
-            [keyIsDown, ~, keyCode, ~]=KbCheck;
-            if (keyIsDown==1 && (keyCode(Key_right)||keyCode(Key_left))) % 判断是否是按键 并且是否是左右箭头键
+			% 逐帧读取视频图像
+			Movie_IMG_Temp = Screen('GetMovieImage', window, Car_MoviePtr); % 获得一帧视频图像
+            if Movie_IMG_Temp<=0 %判断视频是否已经读取完
                 break
             end
             % 更新画面
