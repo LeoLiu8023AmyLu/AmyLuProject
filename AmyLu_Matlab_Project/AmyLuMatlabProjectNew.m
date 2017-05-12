@@ -76,6 +76,7 @@ if(PTB_Flag==1)
     Screen('Flip', window);% 更新显示
     Key_right=KbName('RightArrow'); % 定义键盘右箭头键
     Key_left=KbName('LeftArrow');   % 定义键盘左箭头键
+    Key_space=KbName('SPACE');      % 定义键盘空格键
     Screen('TextSize', window, (PTB_Text_Size+20)); % 设置后期的字体大小，如一致不一致
     %按下任意键开始
     keyIsDown=0;
@@ -229,9 +230,17 @@ for Main_Index=1:length(Video_Name_C)    % 设置循环
     %% 试次间暂停休息
     if(PTB_Flag==1)
         if(mod(Main_Index,Rest_Num)==0)
-            DrawFormattedText(window, double('休息10秒'), 'center', 'center', Color_white);
+            DrawFormattedText(window, double('休息一下\n\n按 空格键 继续'), 'center', 'center', Color_white);
             Screen('Flip', window);% 更新显示
-            WaitSecs(10);
+            %WaitSecs(10);
+			%按下任意键开始
+			keyIsDown=0;
+			while(1)
+				[keyIsDown, ~, keyCode, ~]=KbCheck; % 获取键盘按键
+				if (keyIsDown==1 && keyCode(Key_space)) % 按键后退出循环
+					break
+				end
+			end
         end
     else    % 测试休息功能
         if(mod(Main_Index,Rest_Num)==0)
