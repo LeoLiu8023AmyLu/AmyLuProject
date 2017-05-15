@@ -5,7 +5,7 @@ clear all
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %以下为程序控制部分     你要设置的
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-PTB_Flag = 1; % 1 为打开 PTB 0 为 关闭 (调试用，在PTB不正常的情况下 调试其他功能)
+PTB_Flag = 0; % 1 为打开 PTB 0 为 关闭 (调试用，在PTB不正常的情况下 调试其他功能)
 Log_Flag = 1; % 1 为打开 Log 0 为 关闭 (调试用，输出运行中的记录)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %以下为初始化设置部分   你要设置的 
@@ -13,7 +13,7 @@ Log_Flag = 1; % 1 为打开 Log 0 为 关闭 (调试用，输出运行中的记录)
 FolderPath='D:\workspace\AmyLuProject\AmyLu_Matlab_Project\';	% 变更文件地址 注意 '\'斜线
 VolunteerName='LeoLiu';  % 测试者姓名
 Excel_Start=2;          % Excel 开始行数
-Speed_Num=6;            % 速度的类别数
+Speed_Num=5;            % 速度的类别数
 CarCode_Class_Num=40;   % 车牌类别数
 Excel_End=Excel_Start+CarCode_Class_Num*Speed_Num-1; % 计算 Excel 结束行数
 CarCode_Change_Num=3;   % 车牌发生变化的位数 最大是 4
@@ -28,6 +28,8 @@ Rest_Num=50;            % 50次后休息一下
 if(Log_Flag==1)
     disp(['-->志愿者姓名： ',VolunteerName])
     disp(['-->读取数据数量： ',num2str((Excel_End-Excel_Start+1))])
+    disp(['-->速度种类数： ',num2str(Speed_Num)])
+    disp(['-->车牌种类数： ',num2str(CarCode_Class_Num)])
     disp(['-->车牌变化位数： ',num2str(CarCode_Change_Num)])
     disp(['-->字符偏移量：',num2str(CarCode_Char_Offset)])
 end
@@ -76,7 +78,7 @@ if(PTB_Flag==1)
     Screen('Flip', window);% 更新显示
     Key_right=KbName('RightArrow'); % 定义键盘右箭头键
     Key_left=KbName('LeftArrow');   % 定义键盘左箭头键
-    Key_space=KbName('SPACE');      % 定义键盘空格键
+    Key_Rest=KbName('ESCAPE');      % 定义退出键
     Screen('TextSize', window, (PTB_Text_Size+20)); % 设置后期的字体大小，如一致不一致
     %按下任意键开始
     keyIsDown=0;
@@ -163,6 +165,7 @@ for Main_Index=1:length(Video_Name_C)    % 设置循环
         Screen('PlayMovie',Car_MoviePtr, Play_Rate); % 控制影片播放的是第三个参数 0 不播放 1 正常速度播放 -1 正常速度倒放
         while (1) % 逐帧播放视频
             % 接收键盘按键
+            keyIsDown=0;      % 初始化按键标识符
             [keyIsDown,secs,keyCode]=KbCheck;
             if (keyIsDown==1 && (keyCode(Key_right)||keyCode(Key_left))) % 判断是否是按键 并且是否是左右箭头键
                 break
@@ -230,14 +233,14 @@ for Main_Index=1:length(Video_Name_C)    % 设置循环
     %% 试次间暂停休息
     if(PTB_Flag==1)
         if(mod(Main_Index,Rest_Num)==0)
-            DrawFormattedText(window, double('休息一下\n\n按 空格键 继续'), 'center', 'center', Color_white);
+            DrawFormattedText(window, double('休息一下\n\n按 Esc键 继续'), 'center', 'center', Color_white);
             Screen('Flip', window);% 更新显示
             %WaitSecs(10);
 			%按下任意键开始
 			keyIsDown=0;
 			while(1)
 				[keyIsDown, ~, keyCode, ~]=KbCheck; % 获取键盘按键
-				if (keyIsDown==1 && keyCode(Key_space)) % 按键后退出循环
+				if (keyIsDown==1 && keyCode(Key_Rest)) % 按键后退出循环
 					break
 				end
 			end
@@ -265,3 +268,4 @@ xlswrite(Excel_OUTPUT_FileName, OutPut_Cell, VolunteerName, ['A',num2str(Excel_S
 if(Log_Flag==1)
     disp(['-->实验数据保存成功 ！'])
 end
+clear all

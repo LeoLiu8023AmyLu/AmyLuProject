@@ -15,9 +15,9 @@ Title_Name='CarCode';   % Txt 文件的数据组名称
 Txt_File_Name='AmyLuTxt.txt';    % 要读取的 Python 生成的Txt文件名
 Video_Form='.mp4';
 FolderPath='D:\workspace\AmyLuProject\AmyLu_Matlab_Project\';	% 变更文件地址 注意 '\'斜线
-Start_Speed=0.1;    % 起始速度
+Start_Speed=0.2;    % 起始速度
 Speed_Step=0.1;     % 速度变化步进
-Speed_Num=6;        % 速度类别数
+Speed_Num=5;        % 速度类别数
 End_Speed=Start_Speed+(Speed_Num-1)*Speed_Step;      % 终止速度
 Excel_Start=2;      % Excel 开始行数
 Car_Code_Num=40;    % 自定义车牌的总数量
@@ -99,7 +99,7 @@ end
 %% 循环 生成Excel表格内容
 for Excel_Index=1:Excel_All
     %% 计算类别
-    Temp_Category=ceil(Excel_Index/6);
+    Temp_Category=ceil(Excel_Index/Speed_Num);
     if (Temp_Category<10) % 添加0
         Temp_Category_Char=[int2str(0),int2str(Temp_Category)];% 添加零
     else
@@ -110,6 +110,7 @@ for Excel_Index=1:Excel_All
     if(Temp_Speed==0)
         Temp_Speed=Speed_Num;
     end
+    Temp_Speed=Start_Speed*10+(Temp_Speed-1);               % 生成速度 
     if (Temp_Speed<10) % 添加0
         Temp_Speed_Char=[int2str(0),int2str(Temp_Speed)];   % 添加零
     else
