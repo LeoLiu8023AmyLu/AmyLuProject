@@ -275,7 +275,9 @@ Speed_All=unique(cell2mat(Video_Name_C(:,3)))/10.0; % 获取全部车牌信息
 Speed_All=Speed_All';
 Correct_Speed=[];
 for Speed_index=1:Speed_Num
-    Correct_Speed(Speed_index)=length(intersect((find(cell2mat(OutPut_Cell(:,5))==Speed_All(Speed_index))),(find(cell2mat(OutPut_Cell(:,6))==1)))); % 计算正确率
+    Correct_Speed(Speed_index)=length(...       % 求总长度
+	intersect((find(cell2mat(OutPut_Cell(:,5))==Speed_All(Speed_index))),...  % intersect 求得矩阵的交集 OutPut_Cell(:,5) 得到速度列
+	(find(cell2mat(OutPut_Cell(:,6))==1)))); % 计算正确率  OutPut_Cell(:,6) 答案列
 end
 Correct_Speed=Correct_Speed/double(CarCode_Class_Num);
 %Figure_Text=[repmat('  X:',length(Speed_All),1),num2str(Speed_All),repmat(', Y:',length(Correct_Speed),1),num2str(Correct_Speed')];
