@@ -5,8 +5,9 @@ clear all
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %以下为程序控制部分     你要设置的
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-PTB_Flag = 0; % 1 为打开 PTB 0 为 关闭 (调试用，在PTB不正常的情况下 调试其他功能)
-Log_Flag = 1; % 1 为打开 Log 0 为 关闭 (调试用，输出运行中的记录)
+PTB_Flag = 0;       % 1 为打开 PTB 0 为 关闭 (调试用，在PTB不正常的情况下 调试其他功能)
+Log_Flag = 1;       % 1 为打开 Log 0 为 关闭 (调试用，输出运行中的记录)
+Video_Interrupt=0;  % 1 为打开视频终端 0 为关闭
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %以下为初始化设置部分   你要设置的 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -164,11 +165,12 @@ for Main_Index=1:length(Video_Name_C)    % 设置循环
         [Car_MoviePtr] = Screen('OpenMovie', window,VideoFileName);
         Screen('PlayMovie',Car_MoviePtr, Play_Rate); % 控制影片播放的是第三个参数 0 不播放 1 正常速度播放 -1 正常速度倒放
         while (1) % 逐帧播放视频
-            % 接收键盘按键
-            keyIsDown=0;      % 初始化按键标识符
-            [keyIsDown,secs,keyCode]=KbCheck;
-            if (keyIsDown==1 && (keyCode(Key_right)||keyCode(Key_left))) % 判断是否是按键 并且是否是左右箭头键
-                break
+            if(Video_Interrupt==1)% 接收键盘按键
+                keyIsDown=0;      % 初始化按键标识符
+                [keyIsDown, ~, keyCode, ~]=KbCheck;
+                if (keyIsDown==1 && (keyCode(Key_right)||keyCode(Key_left))) % 判断是否是按键 并且是否是左右箭头键
+                    break
+                end
             end
 			% 逐帧读取视频图像
 			Movie_IMG_Temp = Screen('GetMovieImage', window, Car_MoviePtr); % 获得一帧视频图像
@@ -268,4 +270,21 @@ xlswrite(Excel_OUTPUT_FileName, OutPut_Cell, VolunteerName, ['A',num2str(Excel_S
 if(Log_Flag==1)
     disp(['-->实验数据保存成功 ！'])
 end
+%% 数据分析部分
+Speed_All=unique(cell2mat(Video_Name_C(:,3)))/10.0; % 获取全部车牌信息
+Speed_All=Speed_All';
+Correct_Speed=[];
+for Speed_index=1:Speed_Num
+    Correct_Speed(Speed_index)=length(intersect((find(cell2mat(OutPut_Cell(:,5))==Speed_All(Speed_index))),(find(cell2mat(OutPut_Cell(:,6))==1)))); % 计算正确率
+end
+Correct_Speed=Correct_Speed/double(CarCode_Class_Num);
+%Figure_Text=[repmat('  X:',length(Speed_All),1),num2str(Speed_All),repmat(', Y:',length(Correct_Speed),1),num2str(Correct_Speed')];
+figure;
+plot(Speed_All,Correct_Speed,'bo-');
+xlabel('速度');
+ylabel('正确率');
+title([VolunteerName,'的测试结果统计']);
+%text(Speed_All,Correct_Speed,cellstr(Figure_Text));
+Speed_All
+Correct_Speed
 clear all
