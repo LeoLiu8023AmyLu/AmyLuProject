@@ -5,26 +5,68 @@ clear all
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %以下为程序控制部分     你要设置的
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-PTB_Flag = 1;       % 1 为打开 PTB 0 为 关闭 (调试用，在PTB不正常的情况下 调试其他功能)
+PTB_Flag = 0;       % 1 为打开 PTB 0 为 关闭 (调试用，在PTB不正常的情况下 调试其他功能)
 Log_Flag = 1;       % 1 为打开 Log 0 为 关闭 (调试用，输出运行中的记录)
 Video_Interrupt=0;  % 1 为打开视频终端 0 为关闭
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %以下为初始化设置部分   你要设置的 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 FolderPath='D:\workspace\AmyLuProject\AmyLu_Matlab_Project\';	% 变更文件地址 注意 '\'斜线
-VolunteerName='Test';  % 测试者姓名
-Excel_Start=2;          % Excel 开始行数
-Speed_Num=5;            % 速度的类别数
-CarCode_Class_Num=40;   % 车牌类别数
-Excel_End=Excel_Start+CarCode_Class_Num*Speed_Num-1; % 计算 Excel 结束行数
+VolunteerName='渣导师';  % 测试者姓名
 CarCode_Change_Num=3;   % 车牌发生变化的位数 最大是 4
 CarCode_Char_Offset=7;  % 最小值为 5  最大值可以无限大 (已经做了处理)
 Play_Rate = 1;          % 播放方式 0 不播放  1 正常速度播放 -1 正常速度倒放【目前无法倒序播放】
 PTB_Text_Size=75;       % 调节字体大小
 Rest_Num=50;            % 50次后休息一下
+%% 数据初始化
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 数据初始化
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if(PTB_Flag==1)
+    %sca % 关闭 PTB 创建的窗口
+end
+Cross_Wait_Time=[0.22 0.24 0.26 0.28 0.3]; % 设置等待时间
+Excel_DATA_FileName = [FolderPath,'DATA.xls'];  % 得到Excel电子表格完整目录
+Excel_OUTPUT_FileName = [FolderPath,'OutPut.xls'];  % 得到Excel电子表格完整目录
+Picture_TargetArea=[FolderPath,'target_area.jpg'];  % 得到 十字 的图片完整路径地址
+[NUM,TXT,RAW]=xlsread(Excel_DATA_FileName ,1);  % 获得表格中的数据
+Video_Name_C=RAW(2:end,:); % 文件交换 Video_Name_C(行号,列号) 引索由1开始
+% Video_Name_C(N,1) 序号
+% Video_Name_C(N,2) 类别
+% Video_Name_C(N,3) 速度
+% Video_Name_C(N,4) 文件类型
+% Video_Name_C(N,5) 车牌内容
+% 根据 Excel 读取内容获取信息
+CarCodeAll=unique(Video_Name_C(:,5)); % 获取全部车牌信息
+Excel_Start=2;          % Excel 开始行数
+Speed_Num=length(unique(cell2mat(Video_Name_C(:,3)))); % 速度的类别数
+CarCode_Class_Num=length(CarCodeAll);   % 车牌类别数
+Excel_End=Excel_Start+CarCode_Class_Num*Speed_Num-1; % 计算 Excel 结束行数
+% 随机序列 修正
+Random_Series=randperm(length(Video_Name_C));   % 生成随机数列
+Random_OK_Flag=1; % 训话
+while(Random_OK_Flag)
+    Temp_Random_Class=cell2mat(Video_Name_C(Random_Series,2));% 根据随机序列提取类别信息
+    Random_OK_Flag=0; % 置零 若循环判断没有相邻项 则退出while循环
+    for n=1:(length(Temp_Random_Class)-1) % 循环比较 n 和 n+1 项
+        if(Temp_Random_Class(n)==Temp_Random_Class(n+1)) % 如果相同
+            if(n>1) % 大于 1 的时候
+                Temp_Random_Num=Random_Series(n-1);
+                Random_Series(n-1)=Random_Series(n);
+                Random_Series(n)=Temp_Random_Num;
+            else % 等于 1 的时候
+                Temp_Random_Num=Random_Series(end);
+                Random_Series(end)=Random_Series(n);
+                Random_Series(n)=Temp_Random_Num;
+            end
+            Random_OK_Flag=1; % 表示有相邻项
+        end
+    end
+end
+OutPut_Cell={}; % 输出的初始化
 %% 打印设置
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% 设置输出
+% 设置输出显示
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if(Log_Flag==1)
     disp(['-->志愿者姓名： ',VolunteerName])
@@ -34,28 +76,6 @@ if(Log_Flag==1)
     disp(['-->车牌变化位数： ',num2str(CarCode_Change_Num)])
     disp(['-->字符偏移量：',num2str(CarCode_Char_Offset)])
 end
-%% 数据初始化
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% 数据初始化
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if(PTB_Flag==1)
-    %sca % 关闭 PTB 创建的窗口
-end
-Cross_Wait_Time=[0.22 0.24 0.26 0.28 0.3]; % 设置等待时间
-Data_Num=Excel_End-Excel_Start+1; % 获取数据读取数量
-Excel_DATA_FileName = [FolderPath,'DATA.xls'];  % 得到Excel电子表格完整目录
-Excel_OUTPUT_FileName = [FolderPath,'OutPut.xls'];  % 得到Excel电子表格完整目录
-Picture_TargetArea=[FolderPath,'target_area.jpg'];  % 得到 十字 的图片完整路径地址
-[NUM,TXT,RAW]=xlsread(Excel_DATA_FileName ,1,['A',num2str(Excel_Start),':','E',num2str(Excel_End)]);  % 获得表格中的数据
-Video_Name_C=RAW; % 文件交换 Video_Name_C(行号,列号) 引索由1开始
-% Video_Name_C(N,1) 序号
-% Video_Name_C(N,2) 类别
-% Video_Name_C(N,3) 速度
-% Video_Name_C(N,4) 文件类型
-% Video_Name_C(N,5) 车牌内容
-CarCodeAll=unique(Video_Name_C(:,5)); % 获取全部车牌信息
-Random_Series=randperm(length(Video_Name_C));   % 生成随机数列
-OutPut_Cell={}; % 输出的初始化
 %% PTB工具初始化
 if(PTB_Flag==1)
     PsychDefaultSetup(2); % PTB 默认初始化
@@ -271,7 +291,7 @@ if(Log_Flag==1)
     disp(['-->实验数据保存成功 ！'])
 end
 %% 数据分析部分
-Speed_All=unique(cell2mat(Video_Name_C(:,3)))/10.0; % 获取全部速度信息
+Speed_All=unique(cell2mat(OutPut_Cell(:,5)))/1.0; % 获取全部速度
 Speed_All=Speed_All';
 Correct_Speed=[];
 for Speed_index=1:Speed_Num
@@ -280,13 +300,15 @@ for Speed_index=1:Speed_Num
 	(find(cell2mat(OutPut_Cell(:,6))==1)))); % 计算正确率  OutPut_Cell(:,6) 答案列
 end
 Correct_Speed=Correct_Speed/double(CarCode_Class_Num);
-%Figure_Text=[repmat('  X:',length(Speed_All),1),num2str(Speed_All),repmat(', Y:',length(Correct_Speed),1),num2str(Correct_Speed')];
+%Figure_Text=[repmat('   速度:',length(Speed_All),1),num2str(Speed_All'),repmat(' m/s',length(Speed_All),1),repmat('  正确率:',length(Correct_Speed),1),num2str((Correct_Speed')*100),repmat('%',length(Correct_Speed),1)];
+Figure_Text=[repmat(' \leftarrow',length(Correct_Speed),1),num2str((Correct_Speed')*100),repmat(' %',length(Correct_Speed),1)];
 figure;
 plot(Speed_All,Correct_Speed,'bo-');
+axis([0 0.6 0 1]); % 设置坐标轴在指定的区间
 xlabel('速度');
 ylabel('正确率');
 title([VolunteerName,'的测试结果统计']);
-%text(Speed_All,Correct_Speed,cellstr(Figure_Text));
+text(Speed_All,Correct_Speed,cellstr(Figure_Text));
 Speed_All
 Correct_Speed
-clear all
+%clear all
