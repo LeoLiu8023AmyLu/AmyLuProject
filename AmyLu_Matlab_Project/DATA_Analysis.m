@@ -40,7 +40,8 @@ for Main_Index=1:length(Sheet)    % 设置循环
         intersect((find(cell2mat(DATA_C(:,5))==Speed_All(Speed_index))),...  % intersect 求得矩阵的交集 DATA_C(:,5) 得到速度列
         (find(cell2mat(DATA_C(:,6))==1)))); % 计算正确率  DATA_C(:,6) 答案列
     end
-    Correct_Speed=Correct_Speed/double(CarCode_Class_Num);
+    Correct_Speed=Correct_Speed/double(CarCode_Class_Num); % 计算每项正确率
+	%% 绘图
     %Figure_Text=[repmat('  X:',length(Speed_All),1),num2str(Speed_All),repmat(', Y:',length(Correct_Speed),1),num2str(Correct_Speed')];
     Figure_Text=[repmat(' \leftarrow',length(Correct_Speed),1),num2str((Correct_Speed')*100),repmat(' %',length(Correct_Speed),1)]; %生成图表文字
     figure(Main_Index);
@@ -53,15 +54,32 @@ for Main_Index=1:length(Sheet)    % 设置循环
     Data_ALL_Cell(Main_Index,1)={char(Sheet(Main_Index))}; % 添加志愿者姓名
     Data_ALL_Cell(Main_Index,2:(length(Correct_Speed)+1))=num2cell(Correct_Speed); % 把正确率数据放入Cell 中
 end
-% 添加Excel表头信息
-Data_Title_Cell(1)={'志愿者姓名\速度(m/s)'};
-Data_Title_Cell(1,2:(length(Speed_All)+1))=num2cell(Speed_All); % 放入速度信息
-Excel_End=length(Sheet)+1; %
+%% 总平均值分析
+% 计算
+Avg_Correct=sum(cell2mat(Data_ALL_Cell(:,2:end))/length(Data_ALL_Cell(:,1)))
+Figure_Text2=[repmat(' \leftarrow',length(Avg_Correct),1),num2str((Avg_Correct')*100),repmat(' %',length(Avg_Correct),1)]; %生成图表文字
+figure;
+plot(Speed_All,Avg_Correct,'ro-');
+axis([(min(Speed_All)-0.1) (max(Speed_All)+0.1) 0 1]); % 设置坐标轴在指定的区间 xmin xmax ymin ymax
+xlabel('速度');
+ylabel('正确率');
+title('平均准确率统计');
+text(Speed_All,Avg_Correct,cellstr(Figure_Text2));
+% 添加Excel表尾信息
+Data_Avg_Cell(1)={'平均准确率'}; % 表头
+Data_Avg_Cell(1,2:(length(Avg_Correct)+1))=num2cell(Avg_Correct); % 放入平均准确率
 %% 记录到 Excel 文件
-Data_Title_Cell
-Data_ALL_Cell
+% 添加Excel表头信息
+Data_Title_Cell(1)={'志愿者姓名\速度(m/s)'}; % 表头
+Data_Title_Cell(1,2:(length(Speed_All)+1))=num2cell(Speed_All); % 放入速度信息
+Excel_End=length(Sheet)+1; % 计算数据截止行
+% 打印
+Data_Title_Cell % 表头
+Data_ALL_Cell 	% 数据
+Avg_Correct     % 平均值
 % 写入 Excel
-xlswrite(Excel_OUTPUT_FileName, Data_Title_Cell, Sheet_Name, ['A1:',char('A'+length(Speed_All)),'1'])
-xlswrite(Excel_OUTPUT_FileName, Data_ALL_Cell, Sheet_Name, ['A2:',char('A'+length(Speed_All)),num2str(Excel_End)])
+xlswrite(Excel_OUTPUT_FileName, Data_Title_Cell, Sheet_Name, ['A1:',char('A'+length(Speed_All)),'1']) % 记录表头
+xlswrite(Excel_OUTPUT_FileName, Data_ALL_Cell, Sheet_Name, ['A2:',char('A'+length(Speed_All)),num2str(Excel_End)]) % 记录数据
+xlswrite(Excel_OUTPUT_FileName, Data_Avg_Cell, Sheet_Name, ['A',num2str(Excel_End+1),':',char('A'+length(Speed_All)),num2str(Excel_End+1)]) % 记录平均值
 disp(['-->实验数据分析结果保存成功 ！'])
-%clear all
+clear all

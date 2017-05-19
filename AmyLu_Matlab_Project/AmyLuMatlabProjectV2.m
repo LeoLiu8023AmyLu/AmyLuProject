@@ -333,4 +333,4 @@ title([VolunteerName,'的测试结果统计']); % 图表 名称
 text(Speed_All,Correct_Speed,cellstr(Figure_Text)); % 在图中标注数据
 Speed_All       % 打印速度
 Correct_Speed   % 打印正确率
-%clear all       % 释放所有资源
+clear all       % 释放所有资源
