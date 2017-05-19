@@ -1,6 +1,17 @@
 # AmyLuProject
 研究生项目 关于脑电实验
 
+## 主要文件:</br>
+* Code :</br>
+	1. `Data_Generator` 根据**txt数据，速度信息**生成 **Excel**文件</br> 
+	2. `AmyLuProject` 主要实验程序，利用PTB工具进行实验</br>
+	3. `Data_Analysis` 实验数据 **分析统计** 文件</br>
+
+* Media :</br>
+	1. `Adobe Photoshop` 文件，主要批量生成**车牌文件**</br>
+	2. `Adobe Premiere` 文件，批量生成**视频文件**</br>
+	3. `电子表格` 根据**屏幕尺寸、像素、视频尺寸、对象尺寸**得到制作的尺寸以及**视频时间**</br>
+
 ## 工作日志 </br>
 * 2017.04.19 程序结构大体写好 主要问题集中在 PTB 的展示部分(无法调试所以无法编写)</br>
 	1.视频播放 播放视频 以及 提示部分， 提示为 预示视频播放将要开始的程序 类似 PTB 启动的时候的叹号</br>
@@ -28,6 +39,25 @@
 * 2017.05.15 完善视频中断程序</br>
 * 2017.05.16 增加实验结束后的统计功能,并用Matlab生成图</br>
 * 2017.05.17 A.测试播放函数，改变速率播放视频；B.制作分析程序，完善V2程序；C.制作0.75m/s视频</br>
+* 2017.05.18 根据导师要求，修改随机序列相邻项重复类别问题; 完善图表显示</br>
+* 2017.05.19 完善程序`Data_Generator`,`AmyLuProject`,`Data_Analysis`程序，解决视频文件名问题，优化文件路径自动读取，主实验程序添加志愿者名字输入功能</br>
+
+
+## 流程</br>
+> 实验主程序流程:</br>
+	Step 0 	: 初始化数据</br>
+	Step 1 	: 初始化PTB</br>
+	Step 2 	: 显示实验说明</br>
+	Step 3 	: 等待键盘任意键输入</br>
+	Step 4 	: 主循环：读取视频信息</br>
+	Step 5 	: 主循环：变化车牌</br>
+	Step 6 	: 主循环：显示十字及车牌</br>
+	Step 7 	: 主循环：播放视频</br>
+	Step 8 	: 主循环：选择判断</br>
+	Step 9 	: 主循环：黑屏1秒</br>
+	Step 10 : 主循环：记录信息</br>
+	Step 11 : 保存Excel+绘制图表</br>
+	Step 12 : 结束程序</br>
 
 
 ## 相关资料：</br>
@@ -39,21 +69,3 @@
 [5. PTB 官网  http://psychtoolbox.org/](http://psychtoolbox.org/)</br>
 [6. PTB Demo例子 http://peterscarfe.com/ptbtutorials.html](http://peterscarfe.com/ptbtutorials.html)</br>
 [7. PTB Text 例子程序 http://peterscarfe.com/textdemo.html](http://peterscarfe.com/textdemo.html)</br>
-
-##　目前问题及任务</br>
-* 2017.05.03 A.相关说明在视频播放前统一说明 	B.十字的出现时间随机	 C.键盘判断使用箭头 	D.每个车牌展示停顿，任意键继续
-
-
-## 流程</br>
-* Step 0 : 初始化数据</br>
-* Step 1 : 初始化PTB</br>
-* Step 2 : 显示实验说明</br>
-* Step 3 : 等待键盘任意键输入</br>
-* Step 4 : 主循环：读取视频信息</br>
-* Step 5 : 主循环：变化车牌</br>
-* Step 6 : 主循环：显示十字及车牌</br>
-* Step 7 : 主循环：播放视频</br>
-* Step 8 : 主循环：选择判断</br>
-* Step 9 : 主循环：黑屏1秒</br>
-* Step 10 : 主循环：记录信息</br>
-* Step 11 : 结束程序</br>
