@@ -8,28 +8,32 @@ clear all
 CarCode_Mode=1;     % 1 使用外部txt 文件 0 使用本程序生成的随机车牌
 Char_Flag = 1;      % 1 为打开  0 为关闭 车牌后5位随机更换为字母
 Log_Flag = 1;       % 1 为打开 Log 0 为 关闭 (调试用，输出运行中的记录)
+SpeedClass_Flag=1;  % 1 使用速度数组作为输入 0 自动步进得到速度
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 以下为初始化设置部分   你要设置的 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Title_Name='CarCode';   % Txt 文件的数据组名称
 Txt_File_Name='AmyLuTxt.txt';    % 要读取的 Python 生成的Txt文件名
+Speed_Class=[0.2,0.3,0.4,0.5,0.75];  % 速度类别
 Video_Form='.mp4';
-FolderPath='D:\workspace\AmyLuProject\AmyLu_Matlab_Project\';	% 变更文件地址 注意 '\'斜线
+%FolderPath='D:\workspace\AmyLuProject\AmyLu_Matlab_Project\';	% 变更文件地址 注意 '\'斜线
 Start_Speed=0.1;    % 起始速度
 Speed_Step=0.1;     % 速度变化步进
 Speed_Num=5;        % 速度类别数
-Speed_Class=[0.1,0.2,0.3,0.4,0.5,0.6,0.75]
-End_Speed=Start_Speed+(Speed_Num-1)*Speed_Step;      % 终止速度
-Excel_Start=2;      % Excel 开始行数
-Car_Code_Num=40;    % 自定义车牌的总数量
 %% 数据初始化
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 数据初始化
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+FolderPath=[fileparts(mfilename('fullpath')),'\'];  % 自动获取 .m 文件目录 因此项目的相对文件位置不要改变
 Car_City={'京','津','豫','渝','翼','苏','云','辽','黑','湘','皖','鲁','新',...
     '浙','赣','鄂','桂','甘','晋','蒙','陕','吉','闽','粤','沪'};
 Car_Char='ABCDEFGHIJKLMNOPQRSTUVWXYZ'; % 字符串组
 Excel_DATA_FileName = [FolderPath,'DATA.xls'];  % 得到Excel电子表格完整目录
+if(SpeedClass_Flag==1)
+    Speed_Num=length(Speed_Class);
+end
+End_Speed=Start_Speed+(Speed_Num-1)*Speed_Step;      % 终止速度
+Excel_Start=2;      % Excel 开始行数
 CarCode_Cell={};    % 存放车牌
 OutPut_Cell={};     % 初始化输出项
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -50,7 +54,6 @@ if(CarCode_Mode==1)
 end
 Excel_All=(Car_Code_Num*((End_Speed-Start_Speed)/Speed_Step+1));
 Excel_End=Excel_Start+Excel_All-1;   % Excel 结束行数
-
 %% 打印设置
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 设置输出
@@ -63,7 +66,11 @@ if(Log_Flag==1)
     end
     disp(['-->是否生成后5位含字母的车牌: ',num2str(Char_Flag),' (1 是 0 否)'])
     disp(['-->车牌数量: ',num2str(Car_Code_Num)])
-    disp(['-->起始速度: ',num2str(Start_Speed),' m/s  终止速度: ',num2str(End_Speed),' m/s  速度步进: ',num2str(Speed_Step),' m/s'])
+    if(SpeedClass_Flag==1)
+        disp(['-->速度数组: ',num2str(Speed_Class)])
+    else
+        disp(['-->起始速度: ',num2str(Start_Speed),' m/s  终止速度: ',num2str(End_Speed),' m/s  速度步进: ',num2str(Speed_Step),' m/s'])
+    end
     disp(['-->速度类数: ',num2str(Speed_Num)])
 end
 %% 主循环函数
@@ -101,22 +108,19 @@ end
 for Excel_Index=1:Excel_All
     %% 计算类别
     Temp_Category=ceil(Excel_Index/Speed_Num);
-    if (Temp_Category<10) % 添加0
-        Temp_Category_Char=[int2str(0),int2str(Temp_Category)];% 添加零
-    else
-        Temp_Category_Char=num2str(Temp_Category);              % 转化为字符串
-    end
+    Temp_Category_Char=num2str(Temp_Category);              % 转化为字符串
     % 计算速度
     Temp_Speed=mod(Excel_Index,Speed_Num);
     if(Temp_Speed==0)
         Temp_Speed=Speed_Num;
     end
-    Temp_Speed=Start_Speed*10+(Temp_Speed-1);               % 生成速度 
-    if (Temp_Speed<10) % 添加0
-        Temp_Speed_Char=[int2str(0),int2str(Temp_Speed)];   % 添加零
+    if(SpeedClass_Flag==1)
+        Temp_Speed=Speed_Class(Temp_Speed)*10.0;    % 得到 10倍列表速度
     else
-        Temp_Speed_Char=num2str(Temp_Speed);                % 转化为字符串
+        Temp_Speed=Start_Speed*10+(Temp_Speed-1);               % 生成速度
     end
+    % 转化速度
+    Temp_Speed_Char=num2str(Temp_Speed);                % 转化为字符串
     % 记录
     OutPut_Cell(Excel_Index,1)=num2cell(Excel_Index);       % 记录序号
     OutPut_Cell(Excel_Index,2)={Temp_Category_Char};        % 记录类别

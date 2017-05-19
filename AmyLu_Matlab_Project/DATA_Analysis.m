@@ -5,16 +5,18 @@ clear all
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %以下为初始化设置部分   你要设置的 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-FolderPath='D:\workspace\AmyLuProject\AmyLu_Matlab_Project\';	% 变更文件地址 注意 '\'斜线
+%FolderPath='D:\workspace\AmyLuProject\AmyLu_Matlab_Project\';	% 变更文件地址 注意 '\'斜线
 Sheet_Name='Data_Analysis';
 %% 数据初始化
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 数据初始化
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+FolderPath=[fileparts(mfilename('fullpath')),'\'];  % 自动获取 .m 文件目录 因此项目的相对文件位置不要改变
 Excel_OUTPUT_FileName = [FolderPath,'OutPut.xls'];  % 得到Excel电子表格完整目录
-[Type Sheet Format]=xlsfinfo(Excel_OUTPUT_FileName);
-% Sheet 中包含表格信息
-Sheet(find(strcmp(Sheet,Sheet_Name)))=[]; % 去除 分析总结表单
+[Type Sheet Format]=xlsfinfo(Excel_OUTPUT_FileName);    % 得到表格文件属性 程序用到的是 Sheet 所有表单信息
+% 处理 Sheet 中的表单 排除不需要的项
+Sheet(find(strcmp(Sheet,Sheet_Name)))=[];   % 去除 分析总结表单
+Sheet(find(strcmp(Sheet,'Sheet1')))=[];     % 去除 Sheet1 表单
 Data_ALL_Cell={}; % 输出的输出
 %% 主循环函数
 for Main_Index=1:length(Sheet)    % 设置循环
@@ -43,7 +45,7 @@ for Main_Index=1:length(Sheet)    % 设置循环
     Figure_Text=[repmat(' \leftarrow',length(Correct_Speed),1),num2str((Correct_Speed')*100),repmat(' %',length(Correct_Speed),1)]; %生成图表文字
     figure(Main_Index);
     plot(Speed_All,Correct_Speed,'bo-');
-    axis([0 0.6 0 1]); % 设置坐标轴在指定的区间 xmin xmax ymin ymax
+    axis([(min(Speed_All)-0.1) (max(Speed_All)+0.1) 0 1]); % 设置坐标轴在指定的区间 xmin xmax ymin ymax
     xlabel('速度');
     ylabel('正确率');
     title([char(Sheet(Main_Index)),'的测试结果统计']);
