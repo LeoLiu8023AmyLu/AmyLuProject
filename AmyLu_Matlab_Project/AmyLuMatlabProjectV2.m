@@ -323,6 +323,9 @@ for Speed_index=1:Speed_Num % 循环得到每类速度的正确数
 	(find(cell2mat(OutPut_Cell(:,6))==1)))); % 计算正确个数  OutPut_Cell(:,6) 答案列
 end
 Correct_Speed=Correct_Speed/double(CarCode_Class_Num); % 计算正确率 每列/数目总数(车牌种类数)
+Speed_All       % 打印速度
+Correct_Speed   % 打印正确率
+%% 绘图部分
 Figure_Text=[repmat(' \leftarrow',length(Correct_Speed),1),num2str((Correct_Speed')*100),repmat(' %',length(Correct_Speed),1)]; %生成图表文字信息
 figure; % 画图
 plot(Speed_All,Correct_Speed,'bo-'); % 绘图
@@ -331,6 +334,4 @@ xlabel('速度');       % X轴 名称
 ylabel('正确率');     % Y轴 名称
 title([VolunteerName,'的测试结果统计']); % 图表 名称
 text(Speed_All,Correct_Speed,cellstr(Figure_Text)); % 在图中标注数据
-Speed_All       % 打印速度
-Correct_Speed   % 打印正确率
 clear all       % 释放所有资源
