@@ -16,7 +16,6 @@ Screen_Strings_A='请观察图片中车牌号\n与视频中车牌号是否一致\n一致按<-- 不一致按
 Screen_Strings_B='一致    不一致 \n\n<--    -->';
 Screen_Strings_C='休息一下\n\n按 Esc键 继续';
 Screen_Strings_D='实验结束\n感谢配合';
-%FolderPath='D:\workspace\AmyLuProject\AmyLu_Matlab_Project\';	% 变更文件地址 注意 '\'斜线
 VolunteerName=input('请输入志愿者姓名:  ','s');     % 输入测试者姓名
 CarCode_Change_Num=3;       % 车牌发生变化的位数 最大是 4
 CarCode_Char_Offset=7;      % 最小值为 5  最大值可以无限大 (已经做了处理)
