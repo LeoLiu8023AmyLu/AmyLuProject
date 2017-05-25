@@ -5,7 +5,7 @@ clear all
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %以下为程序控制部分     你要设置的
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-PTB_Flag = 1;       % 1 为打开 PTB 0 为 关闭 (调试用，在PTB不正常的情况下 调试其他功能)
+PTB_Flag = 0;       % 1 为打开 PTB 0 为 关闭 (调试用，在PTB不正常的情况下 调试其他功能)
 Log_Flag = 1;       % 1 为打开 Log 0 为 关闭 (调试用，输出运行中的记录)
 Video_Interrupt=0;  % 1 为打开视频播放中断 0 为关闭
 Speed_Mode=0;       % 1 为MATLAB通过代码控制速度 0 为直接读取视频文件
@@ -141,7 +141,7 @@ for Main_Index=1:length(Video_Name_C)    % 设置循环
     Temp_Video_Class=cell2mat(Video_Name_C(Temp,2));    % 读取类别
     Temp_Video_Speed=cell2mat(Video_Name_C(Temp,3));    % 读取速度
     Temp_Video_Form=Video_Name_C(Temp,4);    % 读取文件类型
-    Temp_CarCode=Video_Name_C(Temp,5);      % 读取车牌号
+    Temp_CarCode=char(Video_Name_C(Temp,5));      % 读取车牌号
     Temp_Speed=Temp_Video_Speed/10.0;%计算速度
     keyIsDown=0;      % 初始化按键标识符
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -288,8 +288,8 @@ for Main_Index=1:length(Video_Name_C)    % 设置循环
     %% 记录函数
     OutPut_Cell(Main_Index,1)=num2cell(Main_Index);   %记录序号
     OutPut_Cell(Main_Index,2)=Temp_Number;   %记录原始序号
-    OutPut_Cell(Main_Index,3)= {Temp_VideoName};%记录视频文件名
-    OutPut_Cell(Main_Index,4)=Temp_CarCode;  %记录车牌号
+    OutPut_Cell(Main_Index,3)={Temp_VideoName};%记录视频文件名
+    OutPut_Cell(Main_Index,4)={Temp_CarCode};  %记录车牌号
     OutPut_Cell(Main_Index,5)=num2cell(Temp_Speed);  % 记录速度
     OutPut_Cell(Main_Index,6)=num2cell(Temp_Anwser); %记录回答正误
     %% 试次间暂停休息

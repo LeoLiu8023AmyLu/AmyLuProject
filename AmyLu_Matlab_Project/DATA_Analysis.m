@@ -32,7 +32,7 @@ for Main_Index=1:length(Sheet)    % 设置循环
     %% 数据分析部分
     Speed_All=unique(cell2mat(DATA_C(:,5)))/1.0; % 获取全部速度
     Speed_Num=length(Speed_All); % 得到速度种类数
-    CarCode_Class_Num=length(unique(cell2mat(DATA_C(:,4)))); % 得到车牌种类数
+    CarCode_Class_Num=length(unique(DATA_C(:,4))); % 得到车牌种类数 [这里统计的时候无需转化Cell类型]
     Speed_All=Speed_All'; % 转置矩阵
     Correct_Speed=[]; % 建立正确率数组
     for Speed_index=1:Speed_Num
@@ -56,7 +56,11 @@ for Main_Index=1:length(Sheet)    % 设置循环
 end
 %% 总平均值分析
 % 计算
-Avg_Correct=sum(cell2mat(Data_ALL_Cell(:,2:end))/length(Data_ALL_Cell(:,1)))
+if(length(Data_ALL_Cell(:,1))>1) % 判断是否只有一组数据
+    Avg_Correct=sum(cell2mat(Data_ALL_Cell(:,2:end))/length(Data_ALL_Cell(:,1)));
+else
+    Avg_Correct=cell2mat(Data_ALL_Cell(:,2:end))/length(Data_ALL_Cell(:,1));
+end
 Figure_Text2=[repmat(' \leftarrow',length(Avg_Correct),1),num2str((Avg_Correct')*100),repmat(' %',length(Avg_Correct),1)]; %生成图表文字
 figure;
 plot(Speed_All,Avg_Correct,'ro-');
@@ -82,4 +86,4 @@ xlswrite(Excel_OUTPUT_FileName, Data_Title_Cell, Sheet_Name, ['A1:',char('A'+len
 xlswrite(Excel_OUTPUT_FileName, Data_ALL_Cell, Sheet_Name, ['A2:',char('A'+length(Speed_All)),num2str(Excel_End)]) % 记录数据
 xlswrite(Excel_OUTPUT_FileName, Data_Avg_Cell, Sheet_Name, ['A',num2str(Excel_End+1),':',char('A'+length(Speed_All)),num2str(Excel_End+1)]) % 记录平均值
 disp(['-->实验数据分析结果保存成功 ！'])
-clear all
+clear all   % 释放所有资源
