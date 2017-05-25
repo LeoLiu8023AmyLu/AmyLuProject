@@ -12,20 +12,32 @@ Speed_Mode=0;       % 1 为MATLAB通过代码控制速度 0 为直接读取视频文件
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %以下为初始化设置部分   你要设置的 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% 试验中的文字
 Screen_Strings_A='请观察图片中车牌号\n与视频中车牌号是否一致\n一致按<-- 不一致按-->\n\n\n按任意键开始测试';
 Screen_Strings_B='一致    不一致 \n\n<--    -->';
 Screen_Strings_C='休息一下\n\n按 Esc键 继续';
 Screen_Strings_D='实验结束\n感谢配合';
-VolunteerName=input('请输入志愿者姓名:  ','s');     % 输入测试者姓名
+Screen_Strings_E='实验中断\n结果无效\n';
+Input_String='请输入志愿者姓名:  ';
+%% 键盘按键设置
+Key_Right_String='RightArrow';	% 正确回答的按键
+Key_Wrong_String='LeftArrow';	% 错误回答的按键
+Key_Restart_String='ESCAPE';	% 休息退出的按键
+Key_Quit_String='Q';			% 中断退出的按键
+%% 程序自动化设置
+% 车牌自动变化字符设置
 CarCode_Change_Num=3;       % 车牌发生变化的位数 最大是 4
 CarCode_Char_Offset=7;      % 最小值为 5  最大值可以无限大 (已经做了处理)
-Play_Rate = 1;              % 播放方式 0 不播放  1 正常速度播放 -1 正常速度倒放【目前无法倒序播放】
+% 实验显示及休息设置
 PTB_Text_Size=75;           % 调节字体大小
 Rest_Num=50;                % 50次后休息一下
+% 无关设置
+Play_Rate = 1;              % 播放方式 0 不播放  1 正常速度播放 -1 正常速度倒放【目前无法倒序播放】
 %% 数据初始化
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 数据初始化
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+VolunteerName=input(Input_String,'s');     % 输入测试者姓名
 FolderPath=[fileparts(mfilename('fullpath')),'\'];  % 自动获取 .m 文件目录 因此项目的相对文件位置不要改变
 Cross_Wait_Time=[0.22 0.24 0.26 0.28 0.3]; % 设置等待时间
 Excel_DATA_FileName = [FolderPath,'DATA.xls'];  % 得到Excel电子表格完整目录
@@ -104,9 +116,12 @@ if(PTB_Flag==1)
     Screen('TextFont', window, 'simhei');  % 设置字体
     DrawFormattedText(window, double(Screen_Strings_A), 'center','center', Color_white); % 显示文字
     Screen('Flip', window);% 更新显示
-    Key_right=KbName('RightArrow'); % 定义键盘右箭头键
-    Key_left=KbName('LeftArrow');   % 定义键盘左箭头键
-    Key_Rest=KbName('ESCAPE');      % 定义退出键
+	% 定义键盘按键
+	KbName('UnifyKeyNames');
+    Key_O=KbName(Key_Right_String); % 定义键盘右箭头键
+    Key_X=KbName(Key_Wrong_String);   % 定义键盘左箭头键
+    Key_Rest=KbName(Key_Restart_String);      % 定义退出键
+	Key_Exit=KbName(Key_Quit_String);      % 定义退出键
     Screen('TextSize', window, (PTB_Text_Size+20)); % 设置后期的字体大小，如一致不一致
     %按下任意键开始
     keyIsDown=0;
@@ -206,7 +221,7 @@ for Main_Index=1:length(Video_Name_C)    % 设置循环
             if(Video_Interrupt == 1)% 接收键盘按键
                 keyIsDown=0;      % 初始化按键标识符
                 [keyIsDown, ~, keyCode, ~]=KbCheck;
-                if (keyIsDown==1 && (keyCode(Key_right)||keyCode(Key_left))) % 判断是否是按键 并且是否是左右箭头键
+                if (keyIsDown==1 && (keyCode(Key_O)||keyCode(Key_X)||keyCode(Key_Exit))) % 判断是否是按键 并且是否是左右箭头键
                     break
                 end
             end
@@ -229,27 +244,31 @@ for Main_Index=1:length(Video_Name_C)    % 设置循环
             %% 键盘输入
             while(1)  
                 [keyIsDown, ~, keyCode, ~]=KbCheck;
-                if (keyIsDown==1 && (keyCode(Key_right)||keyCode(Key_left))) % 判断是否是按键 并且是否是左右箭头键
+                if (keyIsDown==1 && (keyCode(Key_O)||keyCode(Key_X)||keyCode(Key_Exit))) % 判断是否是按键 并且是否是左右箭头键
                     break
                 end
             end
         end
         %% 判断选择是否正确，用左右箭头表示
         if(Flag_Change_Random==1)% 表示不一致
-            if (keyCode(Key_right)==1)
+            if (keyCode(Key_O)==1)
                 Temp_Anwser=1;
             else
                 Temp_Anwser=0;
             end
         else % 一致的情况
-            if (keyCode(Key_left)==1)
+            if (keyCode(Key_X)==1)
                 Temp_Anwser=1;
             else
                 Temp_Anwser=0;
             end
         end
-        keyCode(Key_right)=0;    % 清零
-        keyCode(Key_left)=0;    % 清零
+		% 中断退出
+		if(keyCode(Key_Exit)==1)
+			break
+		end
+        keyCode(Key_O)=0;    % 清零
+        keyCode(Key_X)=0;    % 清零
         keyIsDown=0;        % 清零
         %% 黑屏1秒
         Screen('Flip',window);  % 更新显示
@@ -296,40 +315,47 @@ for Main_Index=1:length(Video_Name_C)    % 设置循环
 end
 %% 结束问候
 if(PTB_Flag==1)
-    DrawFormattedText(window, double(Screen_Strings_D), 'center', 'center', Color_white);
+	if(length(OutPut_Cell)==(Excel_End-1))
+		DrawFormattedText(window, double(Screen_Strings_D), 'center', 'center', Color_white);
+	else
+		DrawFormattedText(window, double(Screen_Strings_E), 'center', 'center', [1,0,0]);
+	end
     Screen('Flip', window);% 更新显示
     WaitSecs(5);
     sca % 关闭屏幕
 end
-%% 记录到 Excel 文件
+%% 实验结果显示
 if(Log_Flag==1)
     Temp={'序号','原始DATA序号','视频文件名','车牌号','速度(m/s)','回答正误(1为正确,0为错误)'}
     OutPut_Cell
 end
-xlswrite(Excel_OUTPUT_FileName, {'序号','原始DATA序号','视频文件名','车牌号','速度(m/s)','回答正误(1为正确,0为错误)'}, VolunteerName, 'A1:F1')
-xlswrite(Excel_OUTPUT_FileName, OutPut_Cell, VolunteerName, ['A',num2str(Excel_Start),':','F',num2str(Excel_End)])
-if(Log_Flag==1)
-    disp(['-->实验数据保存成功 ！'])
+%% 记录到 Excel 文件
+if(length(OutPut_Cell)==(Excel_End-1))
+	xlswrite(Excel_OUTPUT_FileName, {'序号','原始DATA序号','视频文件名','车牌号','速度(m/s)','回答正误(1为正确,0为错误)'}, VolunteerName, 'A1:F1')
+	xlswrite(Excel_OUTPUT_FileName, OutPut_Cell, VolunteerName, ['A',num2str(Excel_Start),':','F',num2str(Excel_End)])
+	if(Log_Flag==1)
+		disp(['-->实验数据保存成功 ！'])
+	end
+	%% 数据分析部分
+	Speed_All=unique(cell2mat(OutPut_Cell(:,5)))/1.0; % 获取全部速度
+	Speed_All=Speed_All';   % 转置矩阵
+	Correct_Speed=[];       % 速度
+	for Speed_index=1:Speed_Num % 循环得到每类速度的正确数
+		Correct_Speed(Speed_index)=length(...       % 求总长度
+		intersect((find(cell2mat(OutPut_Cell(:,5))==Speed_All(Speed_index))),...  % intersect 求得矩阵的交集 OutPut_Cell(:,5) 得到速度列
+		(find(cell2mat(OutPut_Cell(:,6))==1)))); % 计算正确个数  OutPut_Cell(:,6) 答案列
+	end
+	Correct_Speed=Correct_Speed/double(CarCode_Class_Num); % 计算正确率 每列/数目总数(车牌种类数)
+	Speed_All       % 打印速度
+	Correct_Speed   % 打印正确率
+	%% 绘图部分
+	Figure_Text=[repmat(' \leftarrow',length(Correct_Speed),1),num2str((Correct_Speed')*100),repmat(' %',length(Correct_Speed),1)]; %生成图表文字信息
+	figure; % 画图
+	plot(Speed_All,Correct_Speed,'bo-'); % 绘图
+	axis([(min(Speed_All)-0.1) (max(Speed_All)+0.1) 0 1]); % 设置坐标轴在指定的区间
+	xlabel('速度');       % X轴 名称
+	ylabel('正确率');     % Y轴 名称
+	title([VolunteerName,'的测试结果统计']); % 图表 名称
+	text(Speed_All,Correct_Speed,cellstr(Figure_Text)); % 在图中标注数据
 end
-%% 数据分析部分
-Speed_All=unique(cell2mat(OutPut_Cell(:,5)))/1.0; % 获取全部速度
-Speed_All=Speed_All';   % 转置矩阵
-Correct_Speed=[];       % 速度
-for Speed_index=1:Speed_Num % 循环得到每类速度的正确数
-    Correct_Speed(Speed_index)=length(...       % 求总长度
-	intersect((find(cell2mat(OutPut_Cell(:,5))==Speed_All(Speed_index))),...  % intersect 求得矩阵的交集 OutPut_Cell(:,5) 得到速度列
-	(find(cell2mat(OutPut_Cell(:,6))==1)))); % 计算正确个数  OutPut_Cell(:,6) 答案列
-end
-Correct_Speed=Correct_Speed/double(CarCode_Class_Num); % 计算正确率 每列/数目总数(车牌种类数)
-Speed_All       % 打印速度
-Correct_Speed   % 打印正确率
-%% 绘图部分
-Figure_Text=[repmat(' \leftarrow',length(Correct_Speed),1),num2str((Correct_Speed')*100),repmat(' %',length(Correct_Speed),1)]; %生成图表文字信息
-figure; % 画图
-plot(Speed_All,Correct_Speed,'bo-'); % 绘图
-axis([(min(Speed_All)-0.1) (max(Speed_All)+0.1) 0 1]); % 设置坐标轴在指定的区间
-xlabel('速度');       % X轴 名称
-ylabel('正确率');     % Y轴 名称
-title([VolunteerName,'的测试结果统计']); % 图表 名称
-text(Speed_All,Correct_Speed,cellstr(Figure_Text)); % 在图中标注数据
 clear all       % 释放所有资源
