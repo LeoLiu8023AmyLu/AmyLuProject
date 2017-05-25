@@ -349,13 +349,18 @@ if(length(OutPut_Cell)==(Excel_End-1))
 	Speed_All       % 打印速度
 	Correct_Speed   % 打印正确率
 	%% 绘图部分
-	Figure_Text=[repmat(' \leftarrow',length(Correct_Speed),1),num2str((Correct_Speed')*100),repmat(' %',length(Correct_Speed),1)]; %生成图表文字信息
+	Figure_Arrow=[repmat('\uparrow',length(Correct_Speed),1)]; % 生成箭头
+    Figure_Number=[num2str(roundn((Correct_Speed')*100,-1)),repmat(' %',length(Correct_Speed),1)]; %生成图表文字
 	figure; % 画图
 	plot(Speed_All,Correct_Speed,'bo-'); % 绘图
 	axis([(min(Speed_All)-0.1) (max(Speed_All)+0.1) 0 1]); % 设置坐标轴在指定的区间
 	xlabel('速度');       % X轴 名称
 	ylabel('正确率');     % Y轴 名称
-	title([VolunteerName,'的测试结果统计']); % 图表 名称
-	text(Speed_All,Correct_Speed,cellstr(Figure_Text)); % 在图中标注数据
+	title([VolunteerName,' 的测试结果统计']); % 图表 名称
+	% 数据标注
+    Adjust_Temp=ones(1,length(Speed_All));
+    Adjust_Temp(1,1)=0.85;
+    text(Speed_All,(Correct_Speed.*Adjust_Temp-0.05),cellstr(Figure_Arrow),'center');   % 画箭头
+    text(Speed_All,(Correct_Speed.*Adjust_Temp-0.1),cellstr(Figure_Number),'center');   % 画百分比
 end
 clear all       % 释放所有资源

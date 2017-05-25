@@ -5,8 +5,8 @@ clear all
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %以下为初始化设置部分   你要设置的 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%FolderPath='D:\workspace\AmyLuProject\AmyLu_Matlab_Project\';	% 变更文件地址 注意 '\'斜线
-Sheet_Name='Data_Analysis';
+Sheet_Name='Data_Analysis'; % 分析表格的表单名称
+Plot_Text_Flag=0;   % 是否在图中将数据以底部表格的形式表示出来 1 表示 0 不表示
 %% 数据初始化
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 数据初始化
@@ -42,15 +42,26 @@ for Main_Index=1:length(Sheet)    % 设置循环
     end
     Correct_Speed=Correct_Speed/double(CarCode_Class_Num); % 计算每项正确率
 	%% 绘图
-    %Figure_Text=[repmat('  X:',length(Speed_All),1),num2str(Speed_All),repmat(', Y:',length(Correct_Speed),1),num2str(Correct_Speed')];
-    Figure_Text=[repmat(' \leftarrow',length(Correct_Speed),1),num2str((Correct_Speed')*100),repmat(' %',length(Correct_Speed),1)]; %生成图表文字
+    Figure_Arrow=[repmat('\uparrow',length(Correct_Speed),1)]; % 生成箭头
+    Figure_Number=[num2str(roundn((Correct_Speed')*100,-1)),repmat(' %',length(Correct_Speed),1)]; %生成图表文字
     figure(Main_Index);
     plot(Speed_All,Correct_Speed,'bo-');
     axis([(min(Speed_All)-0.1) (max(Speed_All)+0.1) 0 1]); % 设置坐标轴在指定的区间 xmin xmax ymin ymax
+    % 图表标注
     xlabel('速度');
     ylabel('正确率');
     title([char(Sheet(Main_Index)),'的测试结果统计']);
-    text(Speed_All,Correct_Speed,cellstr(Figure_Text));
+    % 数据标注
+    Adjust_Temp=ones(1,length(Speed_All));
+    Adjust_Temp(1,1)=0.85;
+    text(Speed_All,(Correct_Speed.*Adjust_Temp-0.05),cellstr(Figure_Arrow),'center');   % 画箭头
+    text(Speed_All,(Correct_Speed.*Adjust_Temp-0.1),cellstr(Figure_Number),'center');   % 画百分比
+    if(Plot_Text_Flag==1)
+        text(0,0.4,' 速度 (m/s)');
+        text(0:0.1:max(Speed_All),(repmat(0.3,1,length(Correct_Speed))),(num2cell(Speed_All)));
+        text(0,0.2,' 正确率 %');
+        text(0:0.1:max(Speed_All),(repmat(0.1,1,length(Correct_Speed))),(num2cell(roundn(Correct_Speed*100,-1))));
+    end
     Data_ALL_Cell(Main_Index,1)={char(Sheet(Main_Index))}; % 添加志愿者姓名
     Data_ALL_Cell(Main_Index,2:(length(Correct_Speed)+1))=num2cell(Correct_Speed); % 把正确率数据放入Cell 中
 end
@@ -61,14 +72,25 @@ if(length(Data_ALL_Cell(:,1))>1) % 判断是否只有一组数据
 else
     Avg_Correct=cell2mat(Data_ALL_Cell(:,2:end))/length(Data_ALL_Cell(:,1));
 end
-Figure_Text2=[repmat(' \leftarrow',length(Avg_Correct),1),num2str((Avg_Correct')*100),repmat(' %',length(Avg_Correct),1)]; %生成图表文字
+Figure_Arrow=[repmat('\uparrow',length(Avg_Correct),1)]; % 生成箭头
+Figure_Number=[num2str(roundn((Avg_Correct')*100,-1)),repmat(' %',length(Avg_Correct),1)]; %生成图表文字
+%生成图表文字
 figure;
 plot(Speed_All,Avg_Correct,'ro-');
 axis([(min(Speed_All)-0.1) (max(Speed_All)+0.1) 0 1]); % 设置坐标轴在指定的区间 xmin xmax ymin ymax
+% 图表标注
 xlabel('速度');
 ylabel('正确率');
 title('平均准确率统计');
-text(Speed_All,Avg_Correct,cellstr(Figure_Text2));
+% 数据标注
+text(Speed_All,(Avg_Correct.*Adjust_Temp-0.05),cellstr(Figure_Arrow),'center'); % 画箭头
+text(Speed_All,(Avg_Correct.*Adjust_Temp-0.1),cellstr(Figure_Number),'center'); % 画百分比
+if(Plot_Text_Flag==1)
+    text(0,0.4,' 速度 (m/s)');
+    text(0:0.1:max(Speed_All),(repmat(0.3,1,length(Correct_Speed))),(num2cell(Speed_All)));
+    text(0,0.2,' 正确率 %');
+    text(0:0.1:max(Speed_All),(repmat(0.1,1,length(Correct_Speed))),(num2cell(roundn(Avg_Correct*100,-1))));
+end
 % 添加Excel表尾信息
 Data_Avg_Cell(1)={'平均准确率'}; % 表头
 Data_Avg_Cell(1,2:(length(Avg_Correct)+1))=num2cell(Avg_Correct); % 放入平均准确率
