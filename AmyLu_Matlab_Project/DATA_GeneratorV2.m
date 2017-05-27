@@ -16,7 +16,6 @@ Title_Name='CarCode';   % Txt 文件的数据组名称
 Txt_File_Name='AmyLuTxt.txt';    % 要读取的 Python 生成的Txt文件名
 Speed_Class=[0.075,0.1,0.2,0.3,0.4,0.5,0.6];  % 速度类别
 Video_Form='.mp4';
-%FolderPath='D:\workspace\AmyLuProject\AmyLu_Matlab_Project\';	% 变更文件地址 注意 '\'斜线
 Start_Speed=0.1;    % 起始速度
 Speed_Step=0.1;     % 速度变化步进
 Speed_Num=5;        % 速度类别数
