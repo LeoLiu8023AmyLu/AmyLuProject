@@ -1,6 +1,9 @@
 clc;
 close all
 clear all
+%% 实验 Trigger 记录
+config_io; 					% 文件导入
+outp(hex2dec('C0C0'),0);	% 输出0 [0 是清除？]
 %% 设置部分
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %以下为程序控制部分     你要设置的
@@ -97,6 +100,7 @@ if(Log_Flag==1)
 end
 %% PTB工具初始化
 if(PTB_Flag==1)
+	AssertOpenGL;		  % PTB OpenGL显示设置
     PsychDefaultSetup(2); % PTB 默认初始化
     Screen('Preference','TextEncodingLocale','UTF-8');  % 文本显示编码用 UTF-8
     Screen('Preference', 'SkipSyncTests', 1);    % 跳过检查
@@ -142,6 +146,7 @@ for Main_Index=1:length(Video_Name_C)    % 设置循环
     Temp_Video_Speed=cell2mat(Video_Name_C(Temp,3));    % 读取速度
     Temp_Video_Form=Video_Name_C(Temp,4);    % 读取文件类型
     Temp_CarCode=char(Video_Name_C(Temp,5));      % 读取车牌号
+	Temp_Trigger_Num=floor(Temp_Video_Speed+1);		% 获取 Trigger 的编号 从1开始
     Temp_Speed=Temp_Video_Speed/10.0;%计算速度
     keyIsDown=0;      % 初始化按键标识符
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -217,6 +222,7 @@ for Main_Index=1:length(Video_Name_C)    % 设置循环
             Play_Rate=Temp_Video_Speed/1.0;
         end
         Screen('PlayMovie',Car_MoviePtr, Play_Rate); % 控制影片播放的是第三个参数 0 不播放 1 正常速度播放 -1 正常速度倒放
+		outp(hex2dec('C0C0'),Temp_Trigger_Num);	% 输出 Trigger 编号
         while (1) % 逐帧播放视频
             if(Video_Interrupt == 1)% 接收键盘按键
                 keyIsDown=0;      % 初始化按键标识符
@@ -235,6 +241,7 @@ for Main_Index=1:length(Video_Name_C)    % 设置循环
             Screen('Flip', window);% 更新显示
             Screen('Close', Movie_IMG_Temp);% 释放视频资源
         end
+		outp(hex2dec('C0C0'),0);	% 输出0  若没有 Trigger 线 则选用编号外的数字
         Screen('CloseMovie', Car_MoviePtr);
         Screen('Flip', window);% 更新显示 (去除一些视频残留)
         %% 选择答案
@@ -283,6 +290,7 @@ for Main_Index=1:length(Video_Name_C)    % 设置循环
             Temp_Text='X  不正确';
         end
         disp(['-->用户回答: ',Temp_Text])
+		disp(['-->Trigger : ',num2str(Temp_Trigger_Num)])
         disp(['  '])
     end
     %% 记录函数
