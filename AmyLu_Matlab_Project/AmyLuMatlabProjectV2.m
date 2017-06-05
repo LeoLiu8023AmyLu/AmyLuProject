@@ -1,9 +1,6 @@
 clc;
 close all
 clear all
-%% 实验 Trigger 记录
-config_io; 					% 文件导入
-outp(hex2dec('C0C0'),0);	% 输出0 [0 是清除？]
 %% 设置部分
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %以下为程序控制部分     你要设置的
@@ -12,6 +9,8 @@ PTB_Flag = 0;       % 1 为打开 PTB 0 为 关闭 (调试用，在PTB不正常的情况下 调试其
 Log_Flag = 1;       % 1 为打开 Log 0 为 关闭 (调试用，输出运行中的记录)
 Video_Interrupt=0;  % 1 为打开视频播放中断 0 为关闭
 Speed_Mode=0;       % 1 为MATLAB通过代码控制速度 0 为直接读取视频文件
+Play_Order=1;       % 0 为原始 随机播放顺序; 1 为 同速度递进播放方式
+Auto_Anwser=1;      % 0 关闭 ; 1 开启自动回答
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %以下为初始化设置部分   你要设置的 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -47,42 +46,51 @@ Excel_DATA_FileName = [FolderPath,'DATA.xls'];  % 得到Excel电子表格完整目录
 Excel_OUTPUT_FileName = [FolderPath,'OutPut.xls'];  % 得到Excel电子表格完整目录
 Picture_TargetArea=[FolderPath,'target_area.jpg'];  % 得到 十字 的图片完整路径地址
 [NUM,TXT,RAW]=xlsread(Excel_DATA_FileName ,1);  % 获得表格中的数据
-Video_Name_C=RAW(2:end,:); % 去掉表头保留数据 
-% Video_Name_C(行号,列号) 引索由1开始
-% Video_Name_C(N,1) 序号
-% Video_Name_C(N,2) 类别
-% Video_Name_C(N,3) 速度
-% Video_Name_C(N,4) 文件类型
-% Video_Name_C(N,5) 车牌内容
+DATA_Input_Cell=RAW(2:end,:); % 去掉表头保留数据 
+% DATA_Input_Cell(行号,列号) 引索由1开始
+% DATA_Input_Cell(N,1) 序号
+% DATA_Input_Cell(N,2) 类别
+% DATA_Input_Cell(N,3) 速度
+% DATA_Input_Cell(N,4) 文件类型
+% DATA_Input_Cell(N,5) 车牌内容
 % 根据 Excel 读取内容获取信息
-CarCodeAll=unique(Video_Name_C(:,5));   % 获取全部车牌信息
+CarCodeAll=unique(DATA_Input_Cell(:,5));   % 获取全部车牌信息
 Excel_Start=2;                          % Excel 开始行数
-Speed_Num=length(unique(cell2mat(Video_Name_C(:,3)))); % 速度的类别数
+Speed_Num=length(unique(cell2mat(DATA_Input_Cell(:,3)))); % 速度的类别数
 CarCode_Class_Num=length(CarCodeAll);   % 车牌类别数
 Excel_End=Excel_Start+CarCode_Class_Num*Speed_Num-1; % 计算 Excel 结束行数
-%% 随机序列 修正
-Random_Series=randperm(length(Video_Name_C));   % 生成随机数列
-Random_OK_Flag=1; % 训练标识符
-% 循环修正
-while(Random_OK_Flag)
-    Temp_Random_Class=cell2mat(Video_Name_C(Random_Series,2));% 根据随机序列提取类别信息
-    Random_OK_Flag=0; % 置零 若循环判断没有相邻项 则退出while循环
-    for n=1:(length(Temp_Random_Class)-1) % 循环比较 n 和 n+1 项
-        if(Temp_Random_Class(n)==Temp_Random_Class(n+1)) % 如果相同
-            if(n>1) % 大于 1 的时候
-                Temp_Random_Num=Random_Series(n-1);
-                Random_Series(n-1)=Random_Series(n);
-                Random_Series(n)=Temp_Random_Num;
-            else % 等于 1 的时候
-                Temp_Random_Num=Random_Series(end);
-                Random_Series(end)=Random_Series(n);
-                Random_Series(n)=Temp_Random_Num;
+OutPut_Cell={}; % 输出的初始化
+%% 播放顺序控制
+if(Play_Order==0)
+    %% 随机序列 修正
+    Random_Series=randperm(length(DATA_Input_Cell));   % 生成随机数列
+    Random_OK_Flag=1; % 训练标识符
+    % 循环修正
+    while(Random_OK_Flag)
+        Temp_Random_Class=cell2mat(DATA_Input_Cell(Random_Series,2));% 根据随机序列提取类别信息
+        Random_OK_Flag=0; % 置零 若循环判断没有相邻项 则退出while循环
+        for n=1:(length(Temp_Random_Class)-1) % 循环比较 n 和 n+1 项
+            if(Temp_Random_Class(n)==Temp_Random_Class(n+1)) % 如果相同
+                if(n>1) % 大于 1 的时候
+                    Temp_Random_Num=Random_Series(n-1);
+                    Random_Series(n-1)=Random_Series(n);
+                    Random_Series(n)=Temp_Random_Num;
+                else % 等于 1 的时候
+                    Temp_Random_Num=Random_Series(end);
+                    Random_Series(end)=Random_Series(n);
+                    Random_Series(n)=Temp_Random_Num;
+                end
+                Random_OK_Flag=1; % 表示有相邻项
             end
-            Random_OK_Flag=1; % 表示有相邻项
         end
     end
+    Play_Series=Random_Series;
+else
+    %% 同速度递进播放模式
+    Play_Series=sortrows(DATA_Input_Cell,3);    % 按照速度排序
+    Play_Series=cell2mat(Play_Series(:,1));     % 抽取第一列序号 并 转化为数组结构类型
+    Play_Series=Play_Series';                   % 由列变换为行 (其实这一步可以省略的)
 end
-OutPut_Cell={}; % 输出的初始化
 %% 打印设置
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 设置输出显示
@@ -92,7 +100,7 @@ if(Log_Flag==1)
     disp(['-->项目文件目录:',FolderPath])
     disp(['-->读取数据数量: ',num2str((Excel_End-Excel_Start+1))])
     disp(['-->速度种类数: ',num2str(Speed_Num)])
-    disp(['-->速度分别为: ',num2str((unique(cell2mat(Video_Name_C(:,3)))/10.0)'),'   (m/s)'])
+    disp(['-->速度分别为: ',num2str((unique(cell2mat(DATA_Input_Cell(:,3)))/10.0)'),'   (m/s)'])
     disp(['-->车牌种类数: ',num2str(CarCode_Class_Num)])
     disp(['-->车牌随机变化 ',num2str(CarCode_Change_Num),' 位数字'])
     disp(['-->字符最大偏移量: ',num2str(CarCode_Char_Offset),' (ASCII 码偏移) '])
@@ -100,32 +108,33 @@ if(Log_Flag==1)
 end
 %% PTB工具初始化
 if(PTB_Flag==1)
-	AssertOpenGL;		  % PTB OpenGL显示设置
-    PsychDefaultSetup(2); % PTB 默认初始化
+    config_io;              % Trigger程序文件导入 初始化
+	AssertOpenGL;           % PTB OpenGL显示设置
+    PsychDefaultSetup(2);   % PTB 默认初始化
     Screen('Preference','TextEncodingLocale','UTF-8');  % 文本显示编码用 UTF-8
-    Screen('Preference', 'SkipSyncTests', 1);    % 跳过检查
-    screenGrps=Screen('Screens');   % 初始化 屏幕
-    screenNumber=max(screenGrps);  % 选择次要 投放显示器
-    Color_black = BlackIndex(screenNumber); % 得到黑色屏幕的颜色数值
-    Color_white = WhiteIndex(screenNumber); % 得到白色屏幕的颜色数值
-    Color_grey = Color_white / 2; % 得到灰色屏幕的颜色数值
+    Screen('Preference', 'SkipSyncTests', 1);           % 跳过检查
+    screenGrps=Screen('Screens');                       % 初始化 屏幕
+    screenNumber=max(screenGrps);                       % 选择次要 投放显示器
+    Color_black = BlackIndex(screenNumber);             % 得到黑色屏幕的颜色数值
+    Color_white = WhiteIndex(screenNumber);             % 得到白色屏幕的颜色数值
+    Color_grey = Color_white / 2;                       % 得到灰色屏幕的颜色数值
     [window,windowRect] = PsychImaging('OpenWindow', screenNumber,Color_black); % 获得当前屏幕与屏幕的相关信息
-    [screenXpixels, screenYpixels] = Screen('WindowSize', window); % 获得屏幕尺寸
-    [xCenter, yCenter] = RectCenter(windowRect); % 获得中心坐标
-    Picture_Read_TargetArea= imread(Picture_TargetArea); % 读取 十字 的图片
+    [screenXpixels, screenYpixels] = Screen('WindowSize', window);  % 获得屏幕尺寸
+    [xCenter, yCenter] = RectCenter(windowRect);                    % 获得中心坐标
+    Picture_Read_TargetArea= imread(Picture_TargetArea);            % 读取 十字 的图片
     PTB_IMG_TargetArea=Screen('MakeTexture',window ,Picture_Read_TargetArea); % 转化 十字图片为 PTB 对象
     % Set the blend funciton for the screen
     Screen('BlendFunction', window, 'GL_SRC_ALPHA', 'GL_ONE_MINUS_SRC_ALPHA'); % PTB设置
-    Screen('TextSize', window, PTB_Text_Size); % 设置字体大小
-    Screen('TextFont', window, 'simhei');  % 设置字体
+    Screen('TextSize', window, PTB_Text_Size);                      % 设置字体大小
+    Screen('TextFont', window, 'simhei');                           % 设置字体
     DrawFormattedText(window, double(Screen_Strings_A), 'center','center', Color_white); % 显示文字
     Screen('Flip', window);% 更新显示
 	% 定义键盘按键
 	KbName('UnifyKeyNames');
-    Key_O=KbName(Key_Right_String); % 定义键盘右箭头键
-    Key_X=KbName(Key_Wrong_String);   % 定义键盘左箭头键
-    Key_Rest=KbName(Key_Restart_String);      % 定义退出键
-	Key_Exit=KbName(Key_Quit_String);      % 定义退出键
+    Key_O=KbName(Key_Right_String);         % 定义键盘右箭头键
+    Key_X=KbName(Key_Wrong_String);         % 定义键盘左箭头键
+    Key_Rest=KbName(Key_Restart_String);	% 定义退出键
+	Key_Exit=KbName(Key_Quit_String);       % 定义退出键
     Screen('TextSize', window, (PTB_Text_Size+20)); % 设置后期的字体大小，如一致不一致
     %按下任意键开始
     keyIsDown=0;
@@ -136,16 +145,17 @@ if(PTB_Flag==1)
         end
     end
     keyIsDown=0; % 按键Flag初始化
+    outp(hex2dec('C0C0'),0);	% 输出0 [0 是清除？]
 end
 %% 主循环函数
-for Main_Index=1:length(Video_Name_C)    % 设置循环
+for Main_Index=1:length(DATA_Input_Cell)    % 设置循环
     %% 获取视频信息
-    Temp=Random_Series(Main_Index);  % 读取随机数列的值
-    Temp_Number=Video_Name_C(Temp,1);       % 读取序号
-    Temp_Video_Class=cell2mat(Video_Name_C(Temp,2));    % 读取类别
-    Temp_Video_Speed=cell2mat(Video_Name_C(Temp,3));    % 读取速度
-    Temp_Video_Form=Video_Name_C(Temp,4);    % 读取文件类型
-    Temp_CarCode=char(Video_Name_C(Temp,5));      % 读取车牌号
+    Temp=Play_Series(Main_Index);  % 读取随机数列的值
+    Temp_Number=DATA_Input_Cell(Temp,1);       % 读取序号
+    Temp_Video_Class=cell2mat(DATA_Input_Cell(Temp,2));    % 读取类别
+    Temp_Video_Speed=cell2mat(DATA_Input_Cell(Temp,3));    % 读取速度
+    Temp_Video_Form=DATA_Input_Cell(Temp,4);    % 读取文件类型
+    Temp_CarCode=char(DATA_Input_Cell(Temp,5));      % 读取车牌号
 	Temp_Trigger_Num=floor(Temp_Video_Speed+1);		% 获取 Trigger 的编号 从1开始
     Temp_Speed=Temp_Video_Speed/10.0;%计算速度
     keyIsDown=0;      % 初始化按键标识符
@@ -248,13 +258,23 @@ for Main_Index=1:length(Video_Name_C)    % 设置循环
         if(keyIsDown~=1)
             DrawFormattedText(window, double(Screen_Strings_B), 'center', 'center', Color_white); % window,文字,X坐标，Y坐标，颜色
             Screen('Flip', window);% 更新显示
-            %% 键盘输入
-            while(1)  
-                [keyIsDown, ~, keyCode, ~]=KbCheck;
-                if (keyIsDown==1 && (keyCode(Key_O)||keyCode(Key_X)||keyCode(Key_Exit))) % 判断是否是按键 并且是否是左右箭头键
-                    break
+           if(Auto_Anwser==0)
+               %% 键盘输入
+                while(1)  
+                    [keyIsDown, ~, keyCode, ~]=KbCheck;
+                    if (keyIsDown==1 && (keyCode(Key_O)||keyCode(Key_X)||keyCode(Key_Exit))) % 判断是否是按键 并且是否是左右箭头键
+                        break
+                    end
                 end
-            end
+           else
+               %% 自动生成按键应答
+               keyCode(Key_X)=unidrnd(2)-1; % 随机生成答案
+               if(keyCode(Key_X)==1)
+                   keyCode(Key_O)=0;
+               else
+                   keyCode(Key_O)=1;
+               end
+           end
         end
         %% 判断选择是否正确，用左右箭头表示
         if(Flag_Change_Random==1)% 表示不一致
