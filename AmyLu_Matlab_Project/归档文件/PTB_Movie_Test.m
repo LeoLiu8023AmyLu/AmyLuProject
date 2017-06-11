@@ -18,7 +18,7 @@ Screen('TextSize', window, 80);
 Screen('TextFont', window, 'simhei'); 
     
 %%  ”∆µ≤•∑≈
-VideoFileName='E:\workspace\AmyLuProject\AmyLu_Matlab_Project\video\01-0075.mp4';
+VideoFileName='E:\workspace\AmyLuProject\AmyLu_Matlab_Project\video\Fade.mp4';
 
 for speed=0.5:0.5:10
 speed
