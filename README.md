@@ -49,6 +49,7 @@
 * 2017.06.08 更新视频制作用的电子表格;更新**Pr**项目工程文件，编辑`1920x1080`版本视频工程<br>
 	> 渲染了一个车牌的 `0.075~0.6 m/s` 速度组视频，另外渲染了 **从左到右，以及从右向左** 不同方向的两组视频<br>
 * 2017.06.11 测试PTB软件控制播放速度功能，发现大概速度最多快进4倍左右<br>
+* 2017.06.13 加入Trigger 测试部分，包括视频部分trigger  以及 调试部分 trigger <br>
 
 
 ## 流程</br>
@@ -71,10 +72,12 @@
 
 ## 相关资料：</br>
 关于 PTB Screen 函数的一些网址：</br>
-[1. PTB OpenMovie 函数说明 http://docs.psychtoolbox.org/OpenMovie](http://docs.psychtoolbox.org/OpenMovie)</br>
-[2. PTB PlayMovie 函数说明 http://docs.psychtoolbox.org/PlayMovie](http://docs.psychtoolbox.org/PlayMovie)</br>
-[3. PTB Screen 函数说明 http://docs.psychtoolbox.org/Screen](http://docs.psychtoolbox.org/Screen)</br>
-[4. PTB FAQ https://github.com/Psychtoolbox-3/Psychtoolbox-3/wiki/FAQ](https://github.com/Psychtoolbox-3/Psychtoolbox-3/wiki/FAQ)</br>
-[5. PTB 官网  http://psychtoolbox.org/](http://psychtoolbox.org/)</br>
-[6. PTB Demo例子 http://peterscarfe.com/ptbtutorials.html](http://peterscarfe.com/ptbtutorials.html)</br>
-[7. PTB Text 例子程序 http://peterscarfe.com/textdemo.html](http://peterscarfe.com/textdemo.html)</br>
+1. [ PTB OpenMovie 函数说明 http://docs.psychtoolbox.org/OpenMovie](http://docs.psychtoolbox.org/OpenMovie)</br>
+2. [ PTB PlayMovie 函数说明 http://docs.psychtoolbox.org/PlayMovie](http://docs.psychtoolbox.org/PlayMovie)</br>
+3. [ PTB Screen 函数说明 http://docs.psychtoolbox.org/Screen](http://docs.psychtoolbox.org/Screen)</br>
+4. [ PTB FAQ https://github.com/Psychtoolbox-3/Psychtoolbox-3/wiki/FAQ](https://github.com/Psychtoolbox-3/Psychtoolbox-3/wiki/FAQ)</br>
+5. [ PTB 官网  http://psychtoolbox.org/](http://psychtoolbox.org/)</br>
+6. [ PTB Demo例子 http://peterscarfe.com/ptbtutorials.html](http://peterscarfe.com/ptbtutorials.html)</br>
+7. [ PTB Text 例子程序 http://peterscarfe.com/textdemo.html](http://peterscarfe.com/textdemo.html)</br>
+8. [ InpOut32 and InpOutx64](http://www.highrez.co.uk/Downloads/InpOut32/default.htm)<br>
+9. [ Mex-File Plug-in for Fast MATLAB Port I/O (64-bit Windows XP, Vista, 7)](http://apps.usd.edu/coglab/psyc770/IO64.html)<br>
