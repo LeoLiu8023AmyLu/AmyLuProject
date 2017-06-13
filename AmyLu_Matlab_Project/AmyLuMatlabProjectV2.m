@@ -14,6 +14,9 @@ Auto_Anwser=1;      % 0 关闭 ; 1 开启自动回答
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %以下为初始化设置部分   你要设置的 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Trigger 设置部分
+Trigger_Port='E000';	% 设置Trigger 端口号
+Trigger_End_Num=50;		% 设置Trigger截止线 数字
 %% 试验中的文字
 Screen_Strings_A='请观察图片中车牌号\n与视频中车牌号是否一致\n一致按<-- 不一致按-->\n\n\n按任意键开始测试';
 Screen_Strings_B='一致    不一致 \n\n<--    -->';
@@ -107,8 +110,8 @@ if(Log_Flag==1)
     disp(' ')
 end
 %% PTB工具初始化
+config_io;              % Trigger程序文件导入 初始化
 if(PTB_Flag==1)
-    config_io;              % Trigger程序文件导入 初始化
 	AssertOpenGL;           % PTB OpenGL显示设置
     PsychDefaultSetup(2);   % PTB 默认初始化
     Screen('Preference','TextEncodingLocale','UTF-8');  % 文本显示编码用 UTF-8
@@ -145,7 +148,7 @@ if(PTB_Flag==1)
         end
     end
     keyIsDown=0; % 按键Flag初始化
-    outp(hex2dec('C0C0'),0);	% 输出0 [0 是清除？]
+    outp(hex2dec(Trigger_Port),0);	% 输出0 
 end
 %% 主循环函数
 for Main_Index=1:length(DATA_Input_Cell)    % 设置循环
@@ -159,6 +162,7 @@ for Main_Index=1:length(DATA_Input_Cell)    % 设置循环
 	Temp_Trigger_Num=floor(Temp_Video_Speed+1);		% 获取 Trigger 的编号 从1开始
     Temp_Speed=Temp_Video_Speed/10.0;%计算速度
     keyIsDown=0;      % 初始化按键标识符
+	outp(hex2dec(Trigger_Port),0);	% Trigger 置零 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % 转化格式 (由于Excel 存入的类型是数字，所以在此转化为字符)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -232,7 +236,7 @@ for Main_Index=1:length(DATA_Input_Cell)    % 设置循环
             Play_Rate=Temp_Video_Speed/1.0;
         end
         Screen('PlayMovie',Car_MoviePtr, Play_Rate); % 控制影片播放的是第三个参数 0 不播放 1 正常速度播放 -1 正常速度倒放
-		outp(hex2dec('C0C0'),Temp_Trigger_Num);	% 输出 Trigger 编号
+		outp(hex2dec(Trigger_Port),Temp_Trigger_Num);	% 输出 Trigger 编号
         while (1) % 逐帧播放视频
             if(Video_Interrupt == 1)% 接收键盘按键
                 keyIsDown=0;      % 初始化按键标识符
@@ -244,14 +248,15 @@ for Main_Index=1:length(DATA_Input_Cell)    % 设置循环
 			% 逐帧读取视频图像
 			Movie_IMG_Temp = Screen('GetMovieImage', window, Car_MoviePtr); % 获得一帧视频图像
             if (Movie_IMG_Temp<=0) %判断视频是否已经读取完
-                break
+                outp(hex2dec(Trigger_Port),0);	% 输出0 
+				break
             end
             % 更新画面
             Screen('DrawTexture', window, Movie_IMG_Temp);% 绘制图像
             Screen('Flip', window);% 更新显示
             Screen('Close', Movie_IMG_Temp);% 释放视频资源
         end
-		outp(hex2dec('C0C0'),0);	% 输出0  若没有 Trigger 线 则选用编号外的数字
+		outp(hex2dec(Trigger_Port),Trigger_End_Num);	% 输出 Trigger_End_Num 截止 线
         Screen('CloseMovie', Car_MoviePtr);
         Screen('Flip', window);% 更新显示 (去除一些视频残留)
         %% 选择答案
@@ -302,6 +307,11 @@ for Main_Index=1:length(DATA_Input_Cell)    % 设置循环
         WaitSecs(1); % 屏幕等待时间
     else % 调试模式使用随机生成方式
         Temp_Anwser=unidrnd(2)-1; % 随机生成答案
+		outp(hex2dec(Trigger_Port),Temp_Trigger_Num);	% 输出 Trigger 编号
+		pause(0.1);
+		outp(hex2dec(Trigger_Port),0);	% Trigger 置零
+		pause(0.1);
+		outp(hex2dec(Trigger_Port),Trigger_End_Num);	% 输出 Trigger 结束线
     end
     if(Log_Flag==1)
         if(Temp_Anwser)
