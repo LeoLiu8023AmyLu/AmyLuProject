@@ -249,7 +249,8 @@ for Main_Index=1:length(DATA_Input_Cell)    % 设置循环
 			% 逐帧读取视频图像
 			Movie_IMG_Temp = Screen('GetMovieImage', window, Car_MoviePtr); % 获得一帧视频图像
             if (Movie_IMG_Temp<=0) %判断视频是否已经读取完
-                outp(hex2dec(Trigger_Port),0);	% 输出0 
+                outp(hex2dec(Trigger_Port),0);	% 输出0
+				pause(0.1);
 				break
             end
             % 更新画面
@@ -309,9 +310,9 @@ for Main_Index=1:length(DATA_Input_Cell)    % 设置循环
     else % 调试模式使用随机生成方式
         Temp_Anwser=unidrnd(2)-1; % 随机生成答案
 		outp(hex2dec(Trigger_Port),Temp_Trigger_Num);	% 输出 Trigger 编号
-		pause(0.1);
+		pause(0.5);
 		outp(hex2dec(Trigger_Port),0);	% Trigger 置零
-		pause(0.1);
+		pause(0.2);
 		outp(hex2dec(Trigger_Port),Trigger_End_Num);	% 输出 Trigger 结束线
     end
     if(Log_Flag==1)
