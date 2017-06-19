@@ -7,10 +7,11 @@ clear all
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 PTB_Flag = 0;       % 1 为打开 PTB 0 为 关闭 (调试用，在PTB不正常的情况下 调试其他功能)
 Log_Flag = 1;       % 1 为打开 Log 0 为 关闭 (调试用，输出运行中的记录)
-Video_Interrupt=0;  % 1 为打开视频播放中断 0 为关闭
+Video_Interrupt=1;  % 1 为打开视频播放中断 0 为关闭
 Speed_Mode=0;       % 1 为MATLAB通过代码控制速度 0 为直接读取视频文件
-Play_Order=1;       % 0 为原始 随机播放顺序; 1 为 同速度递进播放方式
-Auto_Anwser=1;      % 0 关闭 ; 1 开启自动回答
+Play_Order=0;       % 0 为原始 随机播放顺序; 1 为 同速度递进播放方式
+Auto_Anwser=1;      % 0 关闭 ; 1 开启 自动回答
+Trigger_Flag=0;     % 0 关闭 ; 1 开启 Trigger
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %以下为初始化设置部分   你要设置的 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -53,16 +54,25 @@ Picture_TargetArea=[FolderPath,'target_area.jpg'];  % 得到 十字 的图片完整路径地
 DATA_Input_Cell=RAW(2:end,:); % 去掉表头保留数据 
 % DATA_Input_Cell(行号,列号) 引索由1开始
 % DATA_Input_Cell(N,1) 序号
-% DATA_Input_Cell(N,2) 类别
-% DATA_Input_Cell(N,3) 速度
-% DATA_Input_Cell(N,4) 文件类型
-% DATA_Input_Cell(N,5) 车牌内容
+% DATA_Input_Cell(N,2) 方向
+% DATA_Input_Cell(N,3) 类别
+% DATA_Input_Cell(N,4) 速度
+% DATA_Input_Cell(N,5) 文件类型
+% DATA_Input_Cell(N,6) 车牌内容
 % 根据 Excel 读取内容获取信息
-CarCodeAll=unique(DATA_Input_Cell(:,5));   % 获取全部车牌信息
+%% 数据列表定义
+Excel_Index=1;
+Excel_Direction=2;
+Excel_Class=3;
+Excel_Speed=4;
+Excel_Form=5;
+Excel_CarCode=6;
+%% 自动计算Excel得到的数据
+CarCodeAll=unique(DATA_Input_Cell(:,Excel_CarCode));   % 获取全部车牌信息
 Excel_Start=2;                          % Excel 开始行数
-Speed_Num=length(unique(cell2mat(DATA_Input_Cell(:,3)))); % 速度的类别数
+Speed_Num=length(unique(cell2mat(DATA_Input_Cell(:,Excel_Speed)))); % 速度的类别数
 CarCode_Class_Num=length(CarCodeAll);   % 车牌类别数
-Excel_End=Excel_Start+CarCode_Class_Num*Speed_Num-1; % 计算 Excel 结束行数
+Excel_End=Excel_Start+CarCode_Class_Num*Speed_Num*2-1; % 计算 Excel 结束行数
 OutPut_Cell={}; % 输出的初始化
 %% 播放顺序控制
 if(Play_Order==0)
@@ -71,7 +81,7 @@ if(Play_Order==0)
     Random_OK_Flag=1; % 训练标识符
     % 循环修正
     while(Random_OK_Flag)
-        Temp_Random_Class=cell2mat(DATA_Input_Cell(Random_Series,2));% 根据随机序列提取类别信息
+        Temp_Random_Class=cell2mat(DATA_Input_Cell(Random_Series,Excel_Class));% 根据随机序列提取类别信息
         Random_OK_Flag=0; % 置零 若循环判断没有相邻项 则退出while循环
         for n=1:(length(Temp_Random_Class)-1) % 循环比较 n 和 n+1 项
             if(Temp_Random_Class(n)==Temp_Random_Class(n+1)) % 如果相同
@@ -91,7 +101,7 @@ if(Play_Order==0)
     Play_Series=Random_Series;
 else
     %% 同速度递进播放模式
-    Play_Series=sortrows(DATA_Input_Cell,3);    % 按照速度排序
+    Play_Series=sortrows(DATA_Input_Cell,Excel_Speed);    % 按照速度排序
     Play_Series=cell2mat(Play_Series(:,1));     % 抽取第一列序号 并 转化为数组结构类型
     Play_Series=Play_Series';                   % 由列变换为行 (其实这一步可以省略的)
 end
@@ -104,14 +114,17 @@ if(Log_Flag==1)
     disp(['-->项目文件目录:',FolderPath])
     disp(['-->读取数据数量: ',num2str((Excel_End-Excel_Start+1))])
     disp(['-->速度种类数: ',num2str(Speed_Num)])
-    disp(['-->速度分别为: ',num2str((unique(cell2mat(DATA_Input_Cell(:,3)))/10.0)'),'   (m/s)'])
+    disp(['-->速度分别为: ',num2str((unique(cell2mat(DATA_Input_Cell(:,Excel_Speed)))/10.0)'),'   (m/s)'])
     disp(['-->车牌种类数: ',num2str(CarCode_Class_Num)])
     disp(['-->车牌随机变化 ',num2str(CarCode_Change_Num),' 位数字'])
     disp(['-->字符最大偏移量: ',num2str(CarCode_Char_Offset),' (ASCII 码偏移) '])
     disp(' ')
 end
-%% PTB工具初始化
-config_io;              % Trigger程序文件导入 初始化
+%% Trigger 初始化
+if(Trigger_Flag==1)
+    config_io;              % Trigger程序文件导入 初始化
+end
+%% PTB 工具初始化
 if(PTB_Flag==1)
 	AssertOpenGL;           % PTB OpenGL显示设置
     PsychDefaultSetup(2);   % PTB 默认初始化
@@ -149,21 +162,26 @@ if(PTB_Flag==1)
         end
     end
     keyIsDown=0; % 按键Flag初始化
-    outp(hex2dec(Trigger_Port),0);	% 输出0 
+    if(Trigger_Flag==1)
+        outp(hex2dec(Trigger_Port),0);	% 输出0
+    end
 end
 %% 主循环函数
 for Main_Index=1:length(DATA_Input_Cell)    % 设置循环
     %% 获取视频信息
     Temp=Play_Series(Main_Index);  % 读取随机数列的值
-    Temp_Number=DATA_Input_Cell(Temp,1);       % 读取序号
-    Temp_Video_Class=cell2mat(DATA_Input_Cell(Temp,2));    % 读取类别
-    Temp_Video_Speed=cell2mat(DATA_Input_Cell(Temp,3));    % 读取速度
-    Temp_Video_Form=DATA_Input_Cell(Temp,4);    % 读取文件类型
-    Temp_CarCode=char(DATA_Input_Cell(Temp,5));      % 读取车牌号
+    Temp_Number=DATA_Input_Cell(Temp,Excel_Index);       % 读取序号
+    Temp_Direction=char(DATA_Input_Cell(Temp,Excel_Direction));      % 读取车牌号
+    Temp_Video_Class=cell2mat(DATA_Input_Cell(Temp,Excel_Class));    % 读取类别
+    Temp_Video_Speed=cell2mat(DATA_Input_Cell(Temp,Excel_Speed));    % 读取速度
+    Temp_Video_Form=DATA_Input_Cell(Temp,Excel_Form);    % 读取文件类型
+    Temp_CarCode=char(DATA_Input_Cell(Temp,Excel_CarCode));      % 读取车牌号
 	Temp_Trigger_Num=floor(Temp_Video_Speed+1);		% 获取 Trigger 的编号 从1开始
     Temp_Speed=Temp_Video_Speed/10.0;%计算速度
     keyIsDown=0;      % 初始化按键标识符
-	outp(hex2dec(Trigger_Port),0);	% Trigger 置零 
+    if(Trigger_Flag==1)
+        outp(hex2dec(Trigger_Port),0);	% Trigger 置零 
+    end
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % 转化格式 (由于Excel 存入的类型是数字，所以在此转化为字符)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -181,7 +199,7 @@ for Main_Index=1:length(DATA_Input_Cell)    % 设置循环
     if(Speed_Mode==1)
         Temp_Speed_Char='01'; % 设置为 01 代表使用 0.1 m/s 视频文件作为基础
     end
-    Temp_VideoName=[char(Temp_Category_Char),'-',char(Temp_Speed_Char),char(Temp_Video_Form)]; % 组成视频文件名
+    Temp_VideoName=[Temp_Direction,'-',char(Temp_Category_Char),'-',char(Temp_Speed_Char),char(Temp_Video_Form)]; % 组成视频文件名
     VideoFileName =[FolderPath,'video/',char(Temp_VideoName)];   % 得到完整的视频文件路径
     Flag_Change_Random=unidrnd(2)-1; % 随机生成 0 或 1 
     %% 変更车牌信息 
@@ -237,7 +255,9 @@ for Main_Index=1:length(DATA_Input_Cell)    % 设置循环
             Play_Rate=Temp_Video_Speed/1.0;
         end
         Screen('PlayMovie',Car_MoviePtr, Play_Rate); % 控制影片播放的是第三个参数 0 不播放 1 正常速度播放 -1 正常速度倒放
-		outp(hex2dec(Trigger_Port),Temp_Trigger_Num);	% 输出 Trigger 编号
+        if(Trigger_Flag==1)
+            outp(hex2dec(Trigger_Port),Temp_Trigger_Num);	% 输出 Trigger 编号
+        end
         while (1) % 逐帧播放视频
             if(Video_Interrupt == 1)% 接收键盘按键
                 keyIsDown=0;      % 初始化按键标识符
@@ -249,8 +269,10 @@ for Main_Index=1:length(DATA_Input_Cell)    % 设置循环
 			% 逐帧读取视频图像
 			Movie_IMG_Temp = Screen('GetMovieImage', window, Car_MoviePtr); % 获得一帧视频图像
             if (Movie_IMG_Temp<=0) %判断视频是否已经读取完
-                outp(hex2dec(Trigger_Port),0);	% 输出0
-				pause(0.1);
+                if(Trigger_Flag==1)
+                    outp(hex2dec(Trigger_Port),0);	% 输出0
+                    pause(0.1);
+                end
 				break
             end
             % 更新画面
@@ -258,7 +280,9 @@ for Main_Index=1:length(DATA_Input_Cell)    % 设置循环
             Screen('Flip', window);% 更新显示
             Screen('Close', Movie_IMG_Temp);% 释放视频资源
         end
-		outp(hex2dec(Trigger_Port),Trigger_End_Num);	% 输出 Trigger_End_Num 截止 线
+        if(Trigger_Flag==1)
+            outp(hex2dec(Trigger_Port),Trigger_End_Num);	% 输出 Trigger_End_Num 截止 线
+        end
         Screen('CloseMovie', Car_MoviePtr);
         Screen('Flip', window);% 更新显示 (去除一些视频残留)
         %% 选择答案
@@ -309,11 +333,13 @@ for Main_Index=1:length(DATA_Input_Cell)    % 设置循环
         WaitSecs(1); % 屏幕等待时间
     else % 调试模式使用随机生成方式
         Temp_Anwser=unidrnd(2)-1; % 随机生成答案
-		outp(hex2dec(Trigger_Port),Temp_Trigger_Num);	% 输出 Trigger 编号
-		pause(0.5);
-		outp(hex2dec(Trigger_Port),0);	% Trigger 置零
-		pause(0.2);
-		outp(hex2dec(Trigger_Port),Trigger_End_Num);	% 输出 Trigger 结束线
+        if(Trigger_Flag==1)
+            outp(hex2dec(Trigger_Port),Temp_Trigger_Num);	% 输出 Trigger 编号
+            pause(0.5);
+            outp(hex2dec(Trigger_Port),0);	% Trigger 置零
+            pause(0.2);
+            outp(hex2dec(Trigger_Port),Trigger_End_Num);	% 输出 Trigger 结束线
+        end
     end
     if(Log_Flag==1)
         if(Temp_Anwser)
@@ -385,7 +411,7 @@ if(length(OutPut_Cell)==(Excel_End-1))
 		intersect((find(cell2mat(OutPut_Cell(:,5))==Speed_All(Speed_index))),...  % intersect 求得矩阵的交集 OutPut_Cell(:,5) 得到速度列
 		(find(cell2mat(OutPut_Cell(:,6))==1)))); % 计算正确个数  OutPut_Cell(:,6) 答案列
 	end
-	Correct_Speed=Correct_Speed/double(CarCode_Class_Num); % 计算正确率 每列/数目总数(车牌种类数)
+	Correct_Speed=Correct_Speed/double(CarCode_Class_Num*2); % 计算正确率 每列/数目总数(车牌种类数)
 	Speed_All       % 打印速度
 	Correct_Speed   % 打印正确率
 	%% 绘图部分
