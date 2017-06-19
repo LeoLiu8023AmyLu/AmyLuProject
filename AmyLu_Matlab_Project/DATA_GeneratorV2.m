@@ -14,7 +14,7 @@ SpeedClass_Flag=1;  % 1 使用速度数组作为输入 0 自动步进得到速度
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Title_Name='CarCode';   % Txt 文件的数据组名称
 Txt_File_Name='AmyLuTxt.txt';    % 要读取的 Python 生成的Txt文件名
-Speed_Class=[0.075,0.1,0.2,0.3,0.4,0.5,0.6];  % 速度类别
+Speed_Class=[0.1,0.2,0.3,0.4,0.5,0.6];  % 速度类别
 Video_Form='.mp4';
 Start_Speed=0.1;    % 起始速度
 Speed_Step=0.1;     % 速度变化步进
@@ -52,7 +52,7 @@ if(CarCode_Mode==1)
     Car_Code_Num=length(CarCode_Cell);                              % 读取数据长度
 end
 Excel_All=(Car_Code_Num*((End_Speed-Start_Speed)/Speed_Step+1));
-Excel_End=Excel_Start+Excel_All-1;   % Excel 结束行数
+Excel_End=Excel_Start+Excel_All*2-1;   % Excel 结束行数
 %% 打印设置
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 设置输出
@@ -122,18 +122,27 @@ for Excel_Index=1:Excel_All
     Temp_Speed_Char=num2str(Temp_Speed);                % 转化为字符串
     % 记录
     OutPut_Cell(Excel_Index,1)=num2cell(Excel_Index);       % 记录序号
-    OutPut_Cell(Excel_Index,2)={Temp_Category_Char};        % 记录类别
-    OutPut_Cell(Excel_Index,3)={Temp_Speed_Char};           % 记录速度
-    OutPut_Cell(Excel_Index,4)={Video_Form};                % 记录视频文件类型
-    OutPut_Cell(Excel_Index,5)=CarCode_Cell(Temp_Category); %记录车牌内容
+	OutPut_Cell(Excel_Index,2)={'L'};       				% 记录方向
+    OutPut_Cell(Excel_Index,3)={Temp_Category_Char};        % 记录类别
+    OutPut_Cell(Excel_Index,4)={Temp_Speed_Char};           % 记录速度
+    OutPut_Cell(Excel_Index,5)={Video_Form};                % 记录视频文件类型
+    OutPut_Cell(Excel_Index,6)=CarCode_Cell(Temp_Category); %记录车牌内容
+	
+	OutPut_Cell(Excel_Index+Excel_All,1)=num2cell(Excel_Index+Excel_All);       	% 记录序号
+	OutPut_Cell(Excel_Index+Excel_All,2)={'R'};       					% 记录方向
+    OutPut_Cell(Excel_Index+Excel_All,3)={Temp_Category_Char};        	% 记录类别
+    OutPut_Cell(Excel_Index+Excel_All,4)={Temp_Speed_Char};           	% 记录速度
+    OutPut_Cell(Excel_Index+Excel_All,5)={Video_Form};                	% 记录视频文件类型
+    OutPut_Cell(Excel_Index+Excel_All,6)=CarCode_Cell(Temp_Category); 	%记录车牌内容
 end
+
 %% 记录到 Excel 文件
 if(Log_Flag==1)
-    Temp={'序号','类别','速度','文件类型','车牌内容'}
+    Temp={'序号','方向','类别','速度','文件类型','车牌内容'}
     OutPut_Cell
 end
-xlswrite(Excel_DATA_FileName, {'序号','类别','速度','文件类型','车牌内容'}, 'Sheet1', 'A1:E1')
-xlswrite(Excel_DATA_FileName, OutPut_Cell, 'Sheet1', ['A',num2str(Excel_Start),':','E',num2str(Excel_End)])
+xlswrite(Excel_DATA_FileName, {'序号','方向','类别','速度','文件类型','车牌内容'}, 'Sheet1', 'A1:F1')
+xlswrite(Excel_DATA_FileName, OutPut_Cell, 'Sheet1', ['A',num2str(Excel_Start),':','F',num2str(Excel_End)])
 if(Log_Flag==1)
     disp(['-->实验数据保存成功 ！'])
 end
