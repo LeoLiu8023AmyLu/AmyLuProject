@@ -2,16 +2,19 @@ clc;
 close all
 clear all
 %% ÉèÖÃ²¿·Ö
+config_io;
+outp(hex2dec('E000'),0);
+AssertOpenGL;
+% setnum=0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %ÒÔÏÂÎª³ÌĞò¿ØÖÆ²¿·Ö     ÄãÒªÉèÖÃµÄ
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-PTB_Flag = 0;       % 1 Îª´ò¿ª PTB 0 Îª ¹Ø±Õ (µ÷ÊÔÓÃ£¬ÔÚPTB²»Õı³£µÄÇé¿öÏÂ µ÷ÊÔÆäËû¹¦ÄÜ)
+PTB_Flag = 1;       % 1 Îª´ò¿ª PTB 0 Îª ¹Ø±Õ (µ÷ÊÔÓÃ£¬ÔÚPTB²»Õı³£µÄÇé¿öÏÂ µ÷ÊÔÆäËû¹¦ÄÜ)
 Log_Flag = 1;       % 1 Îª´ò¿ª Log 0 Îª ¹Ø±Õ (µ÷ÊÔÓÃ£¬Êä³öÔËĞĞÖĞµÄ¼ÇÂ¼)
 Video_Interrupt=1;  % 1 Îª´ò¿ªÊÓÆµ²¥·ÅÖĞ¶Ï 0 Îª¹Ø±Õ
 Speed_Mode=0;       % 1 ÎªMATLABÍ¨¹ı´úÂë¿ØÖÆËÙ¶È 0 ÎªÖ±½Ó¶ÁÈ¡ÊÓÆµÎÄ¼ş
 Play_Order=0;       % 0 ÎªÔ­Ê¼ Ëæ»ú²¥·ÅË³Ğò; 1 Îª Í¬ËÙ¶Èµİ½ø²¥·Å·½Ê½
-Auto_Anwser=1;      % 0 ¹Ø±Õ ; 1 ¿ªÆô ×Ô¶¯»Ø´ğ
-Trigger_Flag=0;     % 0 ¹Ø±Õ ; 1 ¿ªÆô Trigger
+Auto_Anwser=0;      % 0 ¹Ø±Õ ; 1 ¿ªÆô×Ô¶¯»Ø´ğ
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %ÒÔÏÂÎª³õÊ¼»¯ÉèÖÃ²¿·Ö   ÄãÒªÉèÖÃµÄ 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -45,7 +48,7 @@ Play_Rate = 1;              % ²¥·Å·½Ê½ 0 ²»²¥·Å  1 Õı³£ËÙ¶È²¥·Å -1 Õı³£ËÙ¶Èµ¹·Å¡
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 VolunteerName=input(Input_String,'s');		% ÊäÈë²âÊÔÕßĞÕÃû
 FolderPath=[fileparts(mfilename('fullpath')),'\'];  % ×Ô¶¯»ñÈ¡ .m ÎÄ¼şÄ¿Â¼ Òò´ËÏîÄ¿µÄÏà¶ÔÎÄ¼şÎ»ÖÃ²»Òª¸Ä±ä
-addpath([FolderPath,'config_io','\']);		% ÒıÈë input/output Ä£¿é
+addpath('E:\ljw5m\config_io');		% ÒıÈë input/output Ä£¿é
 Cross_Wait_Time=[0.22 0.24 0.26 0.28 0.3]; % ÉèÖÃµÈ´ıÊ±¼ä
 Excel_DATA_FileName = [FolderPath,'DATA.xls'];  % µÃµ½Excelµç×Ó±í¸ñÍêÕûÄ¿Â¼
 Excel_OUTPUT_FileName = [FolderPath,'OutPut.xls'];  % µÃµ½Excelµç×Ó±í¸ñÍêÕûÄ¿Â¼
@@ -54,25 +57,16 @@ Picture_TargetArea=[FolderPath,'target_area.jpg'];  % µÃµ½ Ê®×Ö µÄÍ¼Æ¬ÍêÕûÂ·¾¶µØ
 DATA_Input_Cell=RAW(2:end,:); % È¥µô±íÍ·±£ÁôÊı¾İ 
 % DATA_Input_Cell(ĞĞºÅ,ÁĞºÅ) ÒıË÷ÓÉ1¿ªÊ¼
 % DATA_Input_Cell(N,1) ĞòºÅ
-% DATA_Input_Cell(N,2) ·½Ïò
-% DATA_Input_Cell(N,3) Àà±ğ
-% DATA_Input_Cell(N,4) ËÙ¶È
-% DATA_Input_Cell(N,5) ÎÄ¼şÀàĞÍ
-% DATA_Input_Cell(N,6) ³µÅÆÄÚÈİ
+% DATA_Input_Cell(N,2) Àà±ğ
+% DATA_Input_Cell(N,3) ËÙ¶È
+% DATA_Input_Cell(N,4) ÎÄ¼şÀàĞÍ
+% DATA_Input_Cell(N,5) ³µÅÆÄÚÈİ
 % ¸ù¾İ Excel ¶ÁÈ¡ÄÚÈİ»ñÈ¡ĞÅÏ¢
-%% Êı¾İÁĞ±í¶¨Òå
-Excel_Index=1;
-Excel_Direction=2;
-Excel_Class=3;
-Excel_Speed=4;
-Excel_Form=5;
-Excel_CarCode=6;
-%% ×Ô¶¯¼ÆËãExcelµÃµ½µÄÊı¾İ
-CarCodeAll=unique(DATA_Input_Cell(:,Excel_CarCode));   % »ñÈ¡È«²¿³µÅÆĞÅÏ¢
+CarCodeAll=unique(DATA_Input_Cell(:,5));   % »ñÈ¡È«²¿³µÅÆĞÅÏ¢
 Excel_Start=2;                          % Excel ¿ªÊ¼ĞĞÊı
-Speed_Num=length(unique(cell2mat(DATA_Input_Cell(:,Excel_Speed)))); % ËÙ¶ÈµÄÀà±ğÊı
+Speed_Num=length(unique(cell2mat(DATA_Input_Cell(:,3)))); % ËÙ¶ÈµÄÀà±ğÊı
 CarCode_Class_Num=length(CarCodeAll);   % ³µÅÆÀà±ğÊı
-Excel_End=Excel_Start+CarCode_Class_Num*Speed_Num*2-1; % ¼ÆËã Excel ½áÊøĞĞÊı
+Excel_End=Excel_Start+CarCode_Class_Num*Speed_Num-1; % ¼ÆËã Excel ½áÊøĞĞÊı
 OutPut_Cell={}; % Êä³öµÄ³õÊ¼»¯
 %% ²¥·ÅË³Ğò¿ØÖÆ
 if(Play_Order==0)
@@ -81,7 +75,7 @@ if(Play_Order==0)
     Random_OK_Flag=1; % ÑµÁ·±êÊ¶·û
     % Ñ­»·ĞŞÕı
     while(Random_OK_Flag)
-        Temp_Random_Class=cell2mat(DATA_Input_Cell(Random_Series,Excel_Class));% ¸ù¾İËæ»úĞòÁĞÌáÈ¡Àà±ğĞÅÏ¢
+        Temp_Random_Class=cell2mat(DATA_Input_Cell(Random_Series,2));% ¸ù¾İËæ»úĞòÁĞÌáÈ¡Àà±ğĞÅÏ¢
         Random_OK_Flag=0; % ÖÃÁã ÈôÑ­»·ÅĞ¶ÏÃ»ÓĞÏàÁÚÏî ÔòÍË³öwhileÑ­»·
         for n=1:(length(Temp_Random_Class)-1) % Ñ­»·±È½Ï n ºÍ n+1 Ïî
             if(Temp_Random_Class(n)==Temp_Random_Class(n+1)) % Èç¹ûÏàÍ¬
@@ -101,7 +95,7 @@ if(Play_Order==0)
     Play_Series=Random_Series;
 else
     %% Í¬ËÙ¶Èµİ½ø²¥·ÅÄ£Ê½
-    Play_Series=sortrows(DATA_Input_Cell,Excel_Speed);    % °´ÕÕËÙ¶ÈÅÅĞò
+    Play_Series=sortrows(DATA_Input_Cell,3);    % °´ÕÕËÙ¶ÈÅÅĞò
     Play_Series=cell2mat(Play_Series(:,1));     % ³éÈ¡µÚÒ»ÁĞĞòºÅ ²¢ ×ª»¯ÎªÊı×é½á¹¹ÀàĞÍ
     Play_Series=Play_Series';                   % ÓÉÁĞ±ä»»ÎªĞĞ (ÆäÊµÕâÒ»²½¿ÉÒÔÊ¡ÂÔµÄ)
 end
@@ -114,17 +108,14 @@ if(Log_Flag==1)
     disp(['-->ÏîÄ¿ÎÄ¼şÄ¿Â¼:',FolderPath])
     disp(['-->¶ÁÈ¡Êı¾İÊıÁ¿: ',num2str((Excel_End-Excel_Start+1))])
     disp(['-->ËÙ¶ÈÖÖÀàÊı: ',num2str(Speed_Num)])
-    disp(['-->ËÙ¶È·Ö±ğÎª: ',num2str((unique(cell2mat(DATA_Input_Cell(:,Excel_Speed)))/10.0)'),'   (m/s)'])
+    disp(['-->ËÙ¶È·Ö±ğÎª: ',num2str((unique(cell2mat(DATA_Input_Cell(:,3)))/10.0)'),'   (m/s)'])
     disp(['-->³µÅÆÖÖÀàÊı: ',num2str(CarCode_Class_Num)])
     disp(['-->³µÅÆËæ»ú±ä»¯ ',num2str(CarCode_Change_Num),' Î»Êı×Ö'])
     disp(['-->×Ö·û×î´óÆ«ÒÆÁ¿: ',num2str(CarCode_Char_Offset),' (ASCII ÂëÆ«ÒÆ) '])
     disp(' ')
 end
-%% Trigger ³õÊ¼»¯
-if(Trigger_Flag==1)
-    config_io;              % Trigger³ÌĞòÎÄ¼şµ¼Èë ³õÊ¼»¯
-end
-%% PTB ¹¤¾ß³õÊ¼»¯
+%% PTB¹¤¾ß³õÊ¼»¯
+config_io;              % Trigger³ÌĞòÎÄ¼şµ¼Èë ³õÊ¼»¯
 if(PTB_Flag==1)
 	AssertOpenGL;           % PTB OpenGLÏÔÊ¾ÉèÖÃ
     PsychDefaultSetup(2);   % PTB Ä¬ÈÏ³õÊ¼»¯
@@ -162,26 +153,21 @@ if(PTB_Flag==1)
         end
     end
     keyIsDown=0; % °´¼üFlag³õÊ¼»¯
-    if(Trigger_Flag==1)
-        outp(hex2dec(Trigger_Port),0);	% Êä³ö0
-    end
+    outp(hex2dec(Trigger_Port),0);	% Êä³ö0 
 end
 %% Ö÷Ñ­»·º¯Êı
 for Main_Index=1:length(DATA_Input_Cell)    % ÉèÖÃÑ­»·
     %% »ñÈ¡ÊÓÆµĞÅÏ¢
     Temp=Play_Series(Main_Index);  % ¶ÁÈ¡Ëæ»úÊıÁĞµÄÖµ
-    Temp_Number=DATA_Input_Cell(Temp,Excel_Index);       % ¶ÁÈ¡ĞòºÅ
-    Temp_Direction=char(DATA_Input_Cell(Temp,Excel_Direction));      % ¶ÁÈ¡³µÅÆºÅ
-    Temp_Video_Class=cell2mat(DATA_Input_Cell(Temp,Excel_Class));    % ¶ÁÈ¡Àà±ğ
-    Temp_Video_Speed=cell2mat(DATA_Input_Cell(Temp,Excel_Speed));    % ¶ÁÈ¡ËÙ¶È
-    Temp_Video_Form=DATA_Input_Cell(Temp,Excel_Form);    % ¶ÁÈ¡ÎÄ¼şÀàĞÍ
-    Temp_CarCode=char(DATA_Input_Cell(Temp,Excel_CarCode));      % ¶ÁÈ¡³µÅÆºÅ
+    Temp_Number=DATA_Input_Cell(Temp,1);       % ¶ÁÈ¡ĞòºÅ
+    Temp_Video_Class=cell2mat(DATA_Input_Cell(Temp,2));    % ¶ÁÈ¡Àà±ğ
+    Temp_Video_Speed=cell2mat(DATA_Input_Cell(Temp,3));    % ¶ÁÈ¡ËÙ¶È
+    Temp_Video_Form=DATA_Input_Cell(Temp,4);    % ¶ÁÈ¡ÎÄ¼şÀàĞÍ
+    Temp_CarCode=char(DATA_Input_Cell(Temp,5));      % ¶ÁÈ¡³µÅÆºÅ
 	Temp_Trigger_Num=floor(Temp_Video_Speed+1);		% »ñÈ¡ Trigger µÄ±àºÅ ´Ó1¿ªÊ¼
     Temp_Speed=Temp_Video_Speed/10.0;%¼ÆËãËÙ¶È
     keyIsDown=0;      % ³õÊ¼»¯°´¼ü±êÊ¶·û
-    if(Trigger_Flag==1)
-        outp(hex2dec(Trigger_Port),0);	% Trigger ÖÃÁã 
-    end
+	outp(hex2dec(Trigger_Port),0);	% Trigger ÖÃÁã 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % ×ª»¯¸ñÊ½ (ÓÉÓÚExcel ´æÈëµÄÀàĞÍÊÇÊı×Ö£¬ËùÒÔÔÚ´Ë×ª»¯Îª×Ö·û)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -199,7 +185,7 @@ for Main_Index=1:length(DATA_Input_Cell)    % ÉèÖÃÑ­»·
     if(Speed_Mode==1)
         Temp_Speed_Char='01'; % ÉèÖÃÎª 01 ´ú±íÊ¹ÓÃ 0.1 m/s ÊÓÆµÎÄ¼ş×÷Îª»ù´¡
     end
-    Temp_VideoName=[Temp_Direction,'-',char(Temp_Category_Char),'-',char(Temp_Speed_Char),char(Temp_Video_Form)]; % ×é³ÉÊÓÆµÎÄ¼şÃû
+    Temp_VideoName=[char(Temp_Category_Char),'-',char(Temp_Speed_Char),char(Temp_Video_Form)]; % ×é³ÉÊÓÆµÎÄ¼şÃû
     VideoFileName =[FolderPath,'video/',char(Temp_VideoName)];   % µÃµ½ÍêÕûµÄÊÓÆµÎÄ¼şÂ·¾¶
     Flag_Change_Random=unidrnd(2)-1; % Ëæ»úÉú³É 0 »ò 1 
     %% ‰ä¸ü³µÅÆĞÅÏ¢ 
@@ -255,9 +241,7 @@ for Main_Index=1:length(DATA_Input_Cell)    % ÉèÖÃÑ­»·
             Play_Rate=Temp_Video_Speed/1.0;
         end
         Screen('PlayMovie',Car_MoviePtr, Play_Rate); % ¿ØÖÆÓ°Æ¬²¥·ÅµÄÊÇµÚÈı¸ö²ÎÊı 0 ²»²¥·Å 1 Õı³£ËÙ¶È²¥·Å -1 Õı³£ËÙ¶Èµ¹·Å
-        if(Trigger_Flag==1)
-            outp(hex2dec(Trigger_Port),Temp_Trigger_Num);	% Êä³ö Trigger ±àºÅ
-        end
+		outp(hex2dec(Trigger_Port),Temp_Trigger_Num);	% Êä³ö Trigger ±àºÅ
         while (1) % ÖğÖ¡²¥·ÅÊÓÆµ
             if(Video_Interrupt == 1)% ½ÓÊÕ¼üÅÌ°´¼ü
                 keyIsDown=0;      % ³õÊ¼»¯°´¼ü±êÊ¶·û
@@ -269,10 +253,7 @@ for Main_Index=1:length(DATA_Input_Cell)    % ÉèÖÃÑ­»·
 			% ÖğÖ¡¶ÁÈ¡ÊÓÆµÍ¼Ïñ
 			Movie_IMG_Temp = Screen('GetMovieImage', window, Car_MoviePtr); % »ñµÃÒ»Ö¡ÊÓÆµÍ¼Ïñ
             if (Movie_IMG_Temp<=0) %ÅĞ¶ÏÊÓÆµÊÇ·ñÒÑ¾­¶ÁÈ¡Íê
-                if(Trigger_Flag==1)
-                    outp(hex2dec(Trigger_Port),0);	% Êä³ö0
-                    pause(0.1);
-                end
+                outp(hex2dec(Trigger_Port),0);	% Êä³ö0 
 				break
             end
             % ¸üĞÂ»­Ãæ
@@ -280,11 +261,10 @@ for Main_Index=1:length(DATA_Input_Cell)    % ÉèÖÃÑ­»·
             Screen('Flip', window);% ¸üĞÂÏÔÊ¾
             Screen('Close', Movie_IMG_Temp);% ÊÍ·ÅÊÓÆµ×ÊÔ´
         end
-        if(Trigger_Flag==1)
-            outp(hex2dec(Trigger_Port),Trigger_End_Num);	% Êä³ö Trigger_End_Num ½ØÖ¹ Ïß
-        end
+		
         Screen('CloseMovie', Car_MoviePtr);
         Screen('Flip', window);% ¸üĞÂÏÔÊ¾ (È¥³ıÒ»Ğ©ÊÓÆµ²ĞÁô)
+        outp(hex2dec(Trigger_Port),Trigger_End_Num);	% Êä³ö Trigger_End_Num ½ØÖ¹ Ïß
         %% Ñ¡Ôñ´ğ°¸
         if(keyIsDown~=1)
             DrawFormattedText(window, double(Screen_Strings_B), 'center', 'center', Color_white); % window,ÎÄ×Ö,X×ø±ê£¬Y×ø±ê£¬ÑÕÉ«
@@ -333,13 +313,11 @@ for Main_Index=1:length(DATA_Input_Cell)    % ÉèÖÃÑ­»·
         WaitSecs(1); % ÆÁÄ»µÈ´ıÊ±¼ä
     else % µ÷ÊÔÄ£Ê½Ê¹ÓÃËæ»úÉú³É·½Ê½
         Temp_Anwser=unidrnd(2)-1; % Ëæ»úÉú³É´ğ°¸
-        if(Trigger_Flag==1)
-            outp(hex2dec(Trigger_Port),Temp_Trigger_Num);	% Êä³ö Trigger ±àºÅ
-            pause(0.5);
-            outp(hex2dec(Trigger_Port),0);	% Trigger ÖÃÁã
-            pause(0.2);
-            outp(hex2dec(Trigger_Port),Trigger_End_Num);	% Êä³ö Trigger ½áÊøÏß
-        end
+		outp(hex2dec(Trigger_Port),Temp_Trigger_Num);	% Êä³ö Trigger ±àºÅ
+		pause(0.1);
+		outp(hex2dec(Trigger_Port),0);	% Trigger ÖÃÁã
+		pause(0.1);
+		outp(hex2dec(Trigger_Port),Trigger_End_Num);	% Êä³ö Trigger ½áÊøÏß
     end
     if(Log_Flag==1)
         if(Temp_Anwser)
@@ -358,7 +336,6 @@ for Main_Index=1:length(DATA_Input_Cell)    % ÉèÖÃÑ­»·
     OutPut_Cell(Main_Index,4)={Temp_CarCode};  %¼ÇÂ¼³µÅÆºÅ
     OutPut_Cell(Main_Index,5)=num2cell(Temp_Speed);  % ¼ÇÂ¼ËÙ¶È
     OutPut_Cell(Main_Index,6)=num2cell(Temp_Anwser); %¼ÇÂ¼»Ø´ğÕıÎó
-    OutPut_Cell(Main_Index,7)={Temp_Direction};%¼ÇÂ¼ÊÓÆµÎÄ¼şÃû
     %% ÊÔ´Î¼äÔİÍ£ĞİÏ¢
     if(PTB_Flag==1)
         if(mod(Main_Index,Rest_Num)==0)
@@ -393,13 +370,13 @@ if(PTB_Flag==1)
 end
 %% ÊµÑé½á¹ûÏÔÊ¾
 if(Log_Flag==1)
-    Temp={'ĞòºÅ','Ô­Ê¼DATAĞòºÅ','ÊÓÆµÎÄ¼şÃû','³µÅÆºÅ','ËÙ¶È(m/s)','»Ø´ğÕıÎó(1ÎªÕıÈ·,0Îª´íÎó)','·½Ïò'}
+    Temp={'ĞòºÅ','Ô­Ê¼DATAĞòºÅ','ÊÓÆµÎÄ¼şÃû','³µÅÆºÅ','ËÙ¶È(m/s)','»Ø´ğÕıÎó(1ÎªÕıÈ·,0Îª´íÎó)'}
     OutPut_Cell
 end
 %% ¼ÇÂ¼µ½ Excel ÎÄ¼ş
 if(length(OutPut_Cell)==(Excel_End-1))
-	xlswrite(Excel_OUTPUT_FileName, {'ĞòºÅ','Ô­Ê¼DATAĞòºÅ','ÊÓÆµÎÄ¼şÃû','³µÅÆºÅ','ËÙ¶È(m/s)','»Ø´ğÕıÎó(1ÎªÕıÈ·,0Îª´íÎó)','·½Ïò'}, VolunteerName, 'A1:G1')
-	xlswrite(Excel_OUTPUT_FileName, OutPut_Cell, VolunteerName, ['A',num2str(Excel_Start),':','G',num2str(Excel_End)])
+	xlswrite(Excel_OUTPUT_FileName, {'ĞòºÅ','Ô­Ê¼DATAĞòºÅ','ÊÓÆµÎÄ¼şÃû','³µÅÆºÅ','ËÙ¶È(m/s)','»Ø´ğÕıÎó(1ÎªÕıÈ·,0Îª´íÎó)'}, VolunteerName, 'A1:F1')
+	xlswrite(Excel_OUTPUT_FileName, OutPut_Cell, VolunteerName, ['A',num2str(Excel_Start),':','F',num2str(Excel_End)])
 	if(Log_Flag==1)
 		disp(['-->ÊµÑéÊı¾İ±£´æ³É¹¦ £¡'])
 	end
@@ -412,7 +389,7 @@ if(length(OutPut_Cell)==(Excel_End-1))
 		intersect((find(cell2mat(OutPut_Cell(:,5))==Speed_All(Speed_index))),...  % intersect ÇóµÃ¾ØÕóµÄ½»¼¯ OutPut_Cell(:,5) µÃµ½ËÙ¶ÈÁĞ
 		(find(cell2mat(OutPut_Cell(:,6))==1)))); % ¼ÆËãÕıÈ·¸öÊı  OutPut_Cell(:,6) ´ğ°¸ÁĞ
 	end
-	Correct_Speed=Correct_Speed/double(CarCode_Class_Num*2); % ¼ÆËãÕıÈ·ÂÊ Ã¿ÁĞ/ÊıÄ¿×ÜÊı(³µÅÆÖÖÀàÊı)
+	Correct_Speed=Correct_Speed/double(CarCode_Class_Num); % ¼ÆËãÕıÈ·ÂÊ Ã¿ÁĞ/ÊıÄ¿×ÜÊı(³µÅÆÖÖÀàÊı)
 	Speed_All       % ´òÓ¡ËÙ¶È
 	Correct_Speed   % ´òÓ¡ÕıÈ·ÂÊ
 	%% »æÍ¼²¿·Ö

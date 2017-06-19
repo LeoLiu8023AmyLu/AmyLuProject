@@ -358,7 +358,7 @@ for Main_Index=1:length(DATA_Input_Cell)    % 设置循环
     OutPut_Cell(Main_Index,4)={Temp_CarCode};  %记录车牌号
     OutPut_Cell(Main_Index,5)=num2cell(Temp_Speed);  % 记录速度
     OutPut_Cell(Main_Index,6)=num2cell(Temp_Anwser); %记录回答正误
-    OutPut_Cell(Main_Index,7)={Temp_Direction};%记录视频文件名
+    OutPut_Cell(Main_Index,7)={Temp_VideoName};%记录视频文件名
     %% 试次间暂停休息
     if(PTB_Flag==1)
         if(mod(Main_Index,Rest_Num)==0)
