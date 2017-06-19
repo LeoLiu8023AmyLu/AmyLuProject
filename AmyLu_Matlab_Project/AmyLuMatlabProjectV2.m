@@ -45,7 +45,9 @@ Play_Rate = 1;              % ²¥·Å·½Ê½ 0 ²»²¥·Å  1 Õı³£ËÙ¶È²¥·Å -1 Õı³£ËÙ¶Èµ¹·Å¡
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 VolunteerName=input(Input_String,'s');		% ÊäÈë²âÊÔÕßĞÕÃû
 FolderPath=[fileparts(mfilename('fullpath')),'\'];  % ×Ô¶¯»ñÈ¡ .m ÎÄ¼şÄ¿Â¼ Òò´ËÏîÄ¿µÄÏà¶ÔÎÄ¼şÎ»ÖÃ²»Òª¸Ä±ä
-addpath([FolderPath,'config_io','\']);		% ÒıÈë input/output Ä£¿é
+if(Trigger_Flag==1)
+	addpath([FolderPath,'config_io','\']);		% ÒıÈë input/output Ä£¿é
+end
 Cross_Wait_Time=[0.22 0.24 0.26 0.28 0.3]; % ÉèÖÃµÈ´ıÊ±¼ä
 Excel_DATA_FileName = [FolderPath,'DATA.xls'];  % µÃµ½Excelµç×Ó±í¸ñÍêÕûÄ¿Â¼
 Excel_OUTPUT_FileName = [FolderPath,'OutPut.xls'];  % µÃµ½Excelµç×Ó±í¸ñÍêÕûÄ¿Â¼
