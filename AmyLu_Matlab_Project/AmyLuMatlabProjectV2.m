@@ -12,6 +12,7 @@ Speed_Mode=0;       % 1 为MATLAB通过代码控制速度 0 为直接读取视频文件
 Play_Order=0;       % 0 为原始 随机播放顺序; 1 为 同速度递进播放方式
 Auto_Anwser=0;      % 0 关闭 ; 1 开启 自动回答
 Trigger_Flag=1;     % 0 关闭 ; 1 开启 Trigger
+Trigger_End_Flag=0;	% 0 关闭 ; 1 开启 Trigger 结束记录
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %以下为初始化设置部分   你要设置的 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -178,9 +179,14 @@ for Main_Index=1:length(DATA_Input_Cell)    % 设置循环
     Temp_Video_Speed=cell2mat(DATA_Input_Cell(Temp,Excel_Speed));    % 读取速度
     Temp_Video_Form=DATA_Input_Cell(Temp,Excel_Form);    % 读取文件类型
     Temp_CarCode=char(DATA_Input_Cell(Temp,Excel_CarCode));      % 读取车牌号
-	Temp_Trigger_Num=floor(Temp_Video_Speed+1);		% 获取 Trigger 的编号 从1开始
     Temp_Speed=Temp_Video_Speed/10.0;%计算速度
     keyIsDown=0;      % 初始化按键标识符
+	%% 计算Trigger 输出数字
+	if(Temp_Direction=='R')
+		Temp_Trigger_Num=floor(Temp_Video_Speed);		% 从右向左 获取 Trigger 的编号 从1开始
+	else
+		Temp_Trigger_Num=(floor(Temp_Video_Speed))*10;	% 从左向右 获取 Trigger 的编号 从10开始
+	end
     if(Trigger_Flag==1)
         outp(hex2dec(Trigger_Port),0);	% Trigger 置零 
     end
@@ -274,7 +280,7 @@ for Main_Index=1:length(DATA_Input_Cell)    % 设置循环
 			% 逐帧读取视频图像
 			Movie_IMG_Temp = Screen('GetMovieImage', window, Car_MoviePtr); % 获得一帧视频图像
             if (Movie_IMG_Temp<=0) %判断视频是否已经读取完
-                if(Trigger_Flag==1)
+                if(Trigger_Flag==1 && Trigger_End_Flag==1)
                     outp(hex2dec(Trigger_Port),0);	% 输出0
                     pause(0.1);
                 end
@@ -285,7 +291,7 @@ for Main_Index=1:length(DATA_Input_Cell)    % 设置循环
             Screen('Flip', window);% 更新显示
             Screen('Close', Movie_IMG_Temp);% 释放视频资源
         end
-        if(Trigger_Flag==1)
+        if(Trigger_Flag==1 && Trigger_End_Flag==1)
             outp(hex2dec(Trigger_Port),Trigger_End_Num);	% 输出 Trigger_End_Num 截止 线
         end
         Screen('CloseMovie', Car_MoviePtr);
