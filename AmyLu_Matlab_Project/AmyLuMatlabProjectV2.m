@@ -5,19 +5,19 @@ clear all
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %以下为程序控制部分     你要设置的
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-PTB_Flag = 0;       % 1 为打开 PTB 0 为 关闭 (调试用，在PTB不正常的情况下 调试其他功能)
+PTB_Flag = 1;       % 1 为打开 PTB 0 为 关闭 (调试用，在PTB不正常的情况下 调试其他功能)
 Log_Flag = 1;       % 1 为打开 Log 0 为 关闭 (调试用，输出运行中的记录)
-Video_Interrupt=1;  % 1 为打开视频播放中断 0 为关闭
+Video_Interrupt=0;  % 1 为打开视频播放中断 0 为关闭
 Speed_Mode=0;       % 1 为MATLAB通过代码控制速度 0 为直接读取视频文件
 Play_Order=0;       % 0 为原始 随机播放顺序; 1 为 同速度递进播放方式
-Auto_Anwser=1;      % 0 关闭 ; 1 开启 自动回答
-Trigger_Flag=0;     % 0 关闭 ; 1 开启 Trigger
+Auto_Anwser=0;      % 0 关闭 ; 1 开启 自动回答
+Trigger_Flag=1;     % 0 关闭 ; 1 开启 Trigger
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %以下为初始化设置部分   你要设置的 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Trigger 设置部分
 Trigger_Port='E000';	% 设置Trigger 端口号
-Trigger_End_Num=50;		% 设置Trigger截止线 数字
+Trigger_End_Num=0;		% 设置Trigger截止线 数字
 %% 试验中的文字
 Screen_Strings_A='请观察图片中车牌号\n与视频中车牌号是否一致\n一致按<-- 不一致按-->\n\n\n按任意键开始测试';
 Screen_Strings_B='一致    不一致 \n\n<--    -->';
@@ -256,9 +256,12 @@ for Main_Index=1:length(DATA_Input_Cell)    % 设置循环
         if(Speed_Mode == 1)
             Play_Rate=Temp_Video_Speed/1.0;
         end
-        Screen('PlayMovie',Car_MoviePtr, Play_Rate); % 控制影片播放的是第三个参数 0 不播放 1 正常速度播放 -1 正常速度倒放
-        if(Trigger_Flag==1)
-            outp(hex2dec(Trigger_Port),Temp_Trigger_Num);	% 输出 Trigger 编号
+		if(Trigger_Flag==1)
+			outp(hex2dec(Trigger_Port),Temp_Trigger_Num);	% 输出 Trigger 编号
+			Screen('PlayMovie',Car_MoviePtr, Play_Rate); % 控制影片播放的是第三个参数 0 不播放 1 正常速度播放 -1 正常速度倒放
+            outp(hex2dec(Trigger_Port),0);	% 输出 Trigger 置零0
+		else
+			Screen('PlayMovie',Car_MoviePtr, Play_Rate); % 控制影片播放的是第三个参数 0 不播放 1 正常速度播放 -1 正常速度倒放
         end
         while (1) % 逐帧播放视频
             if(Video_Interrupt == 1)% 接收键盘按键
@@ -360,7 +363,7 @@ for Main_Index=1:length(DATA_Input_Cell)    % 设置循环
     OutPut_Cell(Main_Index,4)={Temp_CarCode};  %记录车牌号
     OutPut_Cell(Main_Index,5)=num2cell(Temp_Speed);  % 记录速度
     OutPut_Cell(Main_Index,6)=num2cell(Temp_Anwser); %记录回答正误
-    OutPut_Cell(Main_Index,7)={Temp_Direction};%记录视频文件名
+    OutPut_Cell(Main_Index,7)={Temp_Direction};%记录视频运动方向
     %% 试次间暂停休息
     if(PTB_Flag==1)
         if(mod(Main_Index,Rest_Num)==0)
